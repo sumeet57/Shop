@@ -1,0 +1,29 @@
+/* Apply the spinning animation to the SVG container */
+.circular-text-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  /* This is the key change! We're animating the transform property. */
+  animation: spin 15s linear infinite; /* Adjust speed here */
+}
+
+/* We don't need the animation on textPath anymore */
+.circular-text-svg textPath {
+  fill: var(--color-text-primary); /* Use primary text color */
+  font-family: var(--font-secondary-style); /* Use primary font style */
+  text-anchor: middle; /* Center the text on the path */
+}
+
+/* The spinning keyframes */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

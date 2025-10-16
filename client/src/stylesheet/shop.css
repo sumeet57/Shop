@@ -1,0 +1,78 @@
+.shop-background {
+  background-color: hsla(0, 0%, 0%, 1);
+  background-image: radial-gradient(
+      circle at 5% 5%,
+      hsla(55.98461798962266, 79%, 7%, 1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 95% 5%,
+      hsla(202.68523804086644, 92%, 7%, 1) 0%,
+      transparent 37.374378938380175%
+    ),
+    radial-gradient(
+      circle at 3% 95%,
+      hsla(24.516659340659363, 82%, 7%, 1) 4.6685340802987865%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 70% 68%,
+      hsla(180.00000000000003, 100%, 6%, 1) 0%,
+      transparent 50%
+    );
+  background-blend-mode: normal, normal, normal, normal;
+}
+
+.product_detail {
+  background-color: hsla(0, 0%, 0%, 1);
+  background-image: radial-gradient(
+      circle at 5% 5%,
+      hsla(55.98461798962266, 79%, 7%, 1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 95% 5%,
+      hsla(202.68523804086644, 92%, 7%, 1) 0%,
+      transparent 37.374378938380175%
+    ),
+    radial-gradient(
+      circle at 3% 95%,
+      hsla(24.516659340659363, 82%, 7%, 1) 4.6685340802987865%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 70% 68%,
+      hsla(180.00000000000003, 100%, 6%, 1) 0%,
+      transparent 50%
+    );
+  background-blend-mode: normal, normal, normal, normal;
+
+  button:hover {
+    box-shadow: 10px 10px 1px rgba(255, 165, 0, 0.2);
+  }
+}
+
+.product_checkout {
+  background-color: hsla(0, 0%, 0%, 1);
+  background-image: radial-gradient(
+      circle at 5% 5%,
+      hsla(55.98461798962266, 79%, 7%, 1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 95% 5%,
+      hsla(202.68523804086644, 92%, 7%, 1) 0%,
+      transparent 37.374378938380175%
+    ),
+    radial-gradient(
+      circle at 3% 95%,
+      hsla(24.516659340659363, 82%, 7%, 1) 4.6685340802987865%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 70% 68%,
+      hsla(180.00000000000003, 100%, 6%, 1) 0%,
+      transparent 50%
+    );
+  background-blend-mode: normal, normal, normal, normal;
+}

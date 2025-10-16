@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@theme {
+  --color-primary-bg: #09090b;
+  --color-secondary-bg: #100c08;
+  --color-accent-1: #6366f1;
+  --color-accent-2: #ec4899;
+  --color-text-primary: #fff;
+  --color-text-secondary: #000;
+  /* --color-text-secondary: #94a3b8; */
+  --color-text-highlight: #ff7722;
+  --font-primary-style: "Montserrat Alternates", sans-serif;
+  --font-secondary-style: "Goldman", sans-serif;
+  --font-extra-style: "Rubik Iso", system-ui;
+
+  --text-sm-heading: 4rem;
+  --text-lg-heading: 4.5rem;
+  --text-xl-heading: 5rem;
+  --text-2xl-heading: 5.5rem;
+
+  --text-sm-subheading: 1rem;
+  --text-lg-subheading: 1.3rem;
+  --text-xl-subheading: 1.7rem;
+  --text-2xl-subheading: 1.9rem;
+
+  --text-sm-title: 3rem;
+  --text-lg-title: 3rem;
+  --text-xl-title: 3rem;
+  --text-2xl-title: 3.5rem;
+
+  --text-sm-body: 0.8rem;
+  --text-lg-body: 1rem;
+  --text-xl-body: 1.3rem;
+  --text-2xl-body: 1.5rem;
+
+  --text-sm-button: 1.1rem;
+  --text-lg-button: 1.2rem;
+  --text-xl-button: 1.3rem;
+  --text-2xl-button: 1.4rem;
+}
+.portfolio {
+  cursor: none;
+}
+
+@media (max-width: 768px) {
+  .portfolio {
+    cursor: default;
+  }
+}
+
+.custom-bg-u {
+  /* Your beautiful gradient, now a static, optimized image */
+  background-image: url("./2.png");
+
+  /* Ensure the gradient covers the element and the noise repeats */
+  background-size: cover, auto;
+  background-position: center center;
+  background-repeat: no-repeat, repeat;
+}
+
+.custom-bg-u-project {
+  /* Your beautiful gradient, now a static, optimized image */
+  background-image: url("./3.png");
+
+  /* Ensure the gradient covers the element and the noise repeats */
+  background-size: cover, auto;
+  background-position: center center;
+  background-repeat: no-repeat, repeat;
+}
+
+/* Optional: Add a subtle animation to the noise layer for a dynamic effect */
+
+.particle {
+  width: 100%;
+  height: 100%;
+  background-color: #333;
+  border-radius: 2px;
+  transition: transform 0.2s;
+}
+
+.productCard {
+  box-shadow: 10px 10px 1px black;
+}
+
+@media (max-width: 568px) {
+  .productCard {
+    margin-bottom: 40px;
+  }
+}
