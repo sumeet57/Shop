@@ -17,6 +17,7 @@ const Create = () => {
     projectContext: "",
     features: [],
     includes: [],
+    projectLink: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [featureInput, setFeatureInput] = useState("");
@@ -86,26 +87,36 @@ const Create = () => {
     const dataToSubmit = new FormData();
 
     dataToSubmit.append("name", formData.name);
-    dataToSubmit.append("description", formData.description);
+    if (category !== "custom") {
+      dataToSubmit.append("description", formData.description);
+      dataToSubmit.append("projectContext", formData.projectContext);
+    }
     dataToSubmit.append("price", formData.price);
-    if (category === "iot" || category === "coming soon") {
+
+    if (category === "iot") {
       dataToSubmit.append("stock", formData.stock);
     } else if (category === "web") {
       dataToSubmit.append("stock", 999999);
     } else if (category === "custom") {
       dataToSubmit.append("stock", 0);
     }
+    if (category === "iot" || category === "web") {
+      dataToSubmit.append("projectLink", formData.projectLink);
+    }
 
     dataToSubmit.append("category", formData.category);
     dataToSubmit.append("file", imageFile);
-    dataToSubmit.append("projectContext", formData.projectContext);
-    dataToSubmit.append("features", JSON.stringify(formData.features));
-    dataToSubmit.append("includes", JSON.stringify(formData.includes));
+
+    if (category !== "web") {
+      dataToSubmit.append("features", JSON.stringify(formData.features));
+      dataToSubmit.append("includes", JSON.stringify(formData.includes));
+    }
 
     try {
+      console.log("Submitting form data...");
       const response = await fetch(`${backendUrl}/api/products/create`, {
         method: "POST",
-        body: dataToSubmit,
+        body: dataToSubmit, // <--- CORRECTED: Sending the FormData object
         credentials: "include",
       });
 
@@ -125,15 +136,14 @@ const Create = () => {
       setIsSubmitting(false);
     }
   };
-
   const inputStyle =
     "w-full bg-transparent border-b-2 border-zinc-700 text-zinc-100 py-2 text-base focus:outline-none focus:border-emerald-500 transition-colors duration-300 placeholder-zinc-500";
   const { category } = formData;
-  const isStockRequired = category === "iot" || category === "coming soon";
-  const isDescriptionRequired = category !== "custom";
-  const isProjectContextRequired = category !== "custom";
-  const isFeatureAndIncludeRequired =
-    category !== "web" && category !== "coming soon";
+  const isStockVisible = category === "iot";
+  const isLinkVisible = category === "iot" || category === "web";
+  const isDescriptionVisible = category !== "custom";
+  const isProjectContextVisible = category !== "custom";
+  const isFeatureAndIncludeVisible = category !== "web";
   return (
     <div className="w-full p-4 sm:p-6 md:p-8 bg-zinc-900 min-h-screen">
       <div className="max-w-6xl mx-auto">
@@ -141,7 +151,6 @@ const Create = () => {
           <h1 className="text-4xl font-extrabold text-white">
             Create a New Product
           </h1>
-
           <p className="text-zinc-400 mt-2">
             Add a new item to your inventory by filling out the form below.
           </p>
@@ -166,14 +175,12 @@ const Create = () => {
                 {!imagePreview ? (
                   <div className="text-center p-4">
                     <LuUpload className="mx-auto h-12 w-12 text-zinc-500" />
-
                     <p className="mt-2 text-sm text-zinc-400">
                       <span className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer">
                         Click to upload
                       </span>
                       or drag and drop
                     </p>
-
                     <p className="text-xs text-zinc-500 mt-1">
                       PNG, JPG (max. 5MB)
                     </p>
@@ -185,7 +192,6 @@ const Create = () => {
                       alt="Product Preview"
                       className="w-full h-full object-cover"
                     />
-
                     <button
                       type="button"
                       onClick={removeImage}
@@ -246,12 +252,7 @@ const Create = () => {
                       <option value="custom" className="bg-zinc-900">
                         Custom
                       </option>
-
-                      <option value="coming soon" className="bg-zinc-900">
-                        Coming Soon
-                      </option>
                     </select>
-
                     <div className="pointer-events-none absolute inset-y-0 right-0 top-1/2 transform -translate-y-1/2 flex items-center px-2 text-zinc-500 mt-1">
                       <svg
                         className="fill-current h-4 w-4"
@@ -287,7 +288,7 @@ const Create = () => {
                   />
                 </div>
 
-                {(category === "iot" || category === "coming soon") && (
+                {isStockVisible && (
                   <div>
                     <label
                       htmlFor="stock"
@@ -295,14 +296,13 @@ const Create = () => {
                     >
                       Stock Quantity
                     </label>
-
                     <input
                       type="number"
                       name="stock"
                       id="stock"
                       value={formData.stock}
                       onChange={handleChange}
-                      required={isStockRequired}
+                      required={isStockVisible}
                       min="0"
                       className={inputStyle}
                     />
@@ -310,7 +310,29 @@ const Create = () => {
                 )}
               </div>
 
-              {isProjectContextRequired && (
+              {isLinkVisible && (
+                <div>
+                  <label
+                    htmlFor="projectLink"
+                    className="block text-sm font-medium text-zinc-300"
+                  >
+                    Project Drive Link
+                  </label>
+
+                  <input
+                    type="url"
+                    name="projectLink"
+                    id="projectLink"
+                    value={formData.projectLink}
+                    onChange={handleChange}
+                    required={isLinkVisible}
+                    placeholder="e.g., Google Drive or GitHub link"
+                    className={inputStyle}
+                  />
+                </div>
+              )}
+
+              {isProjectContextVisible && (
                 <div>
                   <label
                     htmlFor="projectContext"
@@ -325,13 +347,14 @@ const Create = () => {
                     value={formData.projectContext}
                     onChange={handleChange}
                     rows="3"
+                    required={isProjectContextVisible}
                     placeholder="A short description for product listing/cards."
                     className={`${inputStyle} mt-2`}
                   />
                 </div>
               )}
 
-              {isDescriptionRequired && (
+              {isDescriptionVisible && (
                 <div>
                   <label
                     htmlFor="description"
@@ -354,8 +377,7 @@ const Create = () => {
               )}
             </div>
           </div>
-
-          {isFeatureAndIncludeRequired && (
+          {isFeatureAndIncludeVisible && (
             <div className="mt-10 pt-6 border-t border-zinc-800 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -388,7 +410,6 @@ const Create = () => {
                       className="flex justify-between items-center bg-zinc-800 p-2 rounded border border-zinc-700 text-sm"
                     >
                       <span className="text-zinc-200">{feature}</span>
-
                       <button
                         type="button"
                         onClick={() => handleRemoveItem("feature", index)}
@@ -432,7 +453,6 @@ const Create = () => {
                       className="flex justify-between items-center bg-zinc-800 p-2 rounded border border-zinc-700 text-sm"
                     >
                       <span className="text-zinc-200">{item}</span>
-
                       <button
                         type="button"
                         onClick={() => handleRemoveItem("include", index)}
@@ -446,7 +466,6 @@ const Create = () => {
               </div>
             </div>
           )}
-
           <footer className="mt-12 pt-6 border-t border-zinc-800 flex justify-end items-center gap-4">
             <button
               type="button"
