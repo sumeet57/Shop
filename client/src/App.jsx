@@ -21,7 +21,7 @@ function App() {
     <Router>
       <Routes>
         <Route
-          path="/shop"
+          path="/"
           element={
             <UserContextProvider>
               <ScrollToTop />

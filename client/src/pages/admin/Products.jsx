@@ -178,7 +178,9 @@ const Products = () => {
                 </button>
 
                 <button
-                  onClick={() => navigate(`/admin/update/${product._id}`)}
+                  onClick={() =>
+                    navigate(`/admin/update-product/${product._id}`)
+                  }
                   className="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-md text-white transition-colors"
                 >
                   <Edit3 size={18} />

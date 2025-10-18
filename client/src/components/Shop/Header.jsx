@@ -37,7 +37,7 @@ const Header = () => {
   const closeMenu = () => setIsMenuOpen(false);
 
   const navItems = [
-    { to: "/shop", label: "Shop" },
+    { to: "/", label: "Shop" },
     ...(user?.name
       ? [
           { to: "/dashboard", label: "Dashboard" },

@@ -1,6 +1,7 @@
 import Product from "../models/product.model.js";
 import { imagekit } from "../services/image.service.js";
 export const createProduct = async (req, res) => {
+  console.log("Request Body:", req.body.name);
   const {
     name,
     projectContext,
@@ -11,15 +12,13 @@ export const createProduct = async (req, res) => {
     features,
     includes,
     imageUrl,
+    projectLink,
   } = req.body;
 
   if (!imageUrl) {
     return res.status(400).json({ message: "Image upload failed." });
   }
   try {
-    const featuresArray = JSON.parse(features);
-    const includesArray = JSON.parse(includes);
-
     const newProduct = new Product({
       user: req.userId,
       name,
@@ -30,8 +29,9 @@ export const createProduct = async (req, res) => {
       imageFileId: req.body.imageFileId,
       stock,
       category,
-      features: featuresArray,
-      includes: includesArray,
+      features,
+      includes,
+      link: projectLink,
     });
     await newProduct.save();
     res.status(201).json(newProduct);

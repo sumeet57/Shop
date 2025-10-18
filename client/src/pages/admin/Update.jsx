@@ -17,6 +17,7 @@ const Update = () => {
     projectContext: "",
     features: [],
     includes: [],
+    projectLink: "",
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -39,6 +40,7 @@ const Update = () => {
           ...data,
           features: data.features || [],
           includes: data.includes || [],
+          projectLink: data.link || data.projectLink || "",
         });
         if (data.imageUrl) {
           setImagePreview(data.imageUrl);
@@ -69,6 +71,7 @@ const Update = () => {
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setFormData((prev) => ({ ...prev, imageUrl: null }));
   };
 
   const handleAddItem = (type) => {
@@ -105,19 +108,40 @@ const Update = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const { category } = formData;
     const dataToSubmit = new FormData();
 
     dataToSubmit.append("name", formData.name);
-    dataToSubmit.append("description", formData.description);
     dataToSubmit.append("price", formData.price);
-    dataToSubmit.append("stock", formData.stock);
     dataToSubmit.append("category", formData.category);
-    dataToSubmit.append("projectContext", formData.projectContext);
-    dataToSubmit.append("features", JSON.stringify(formData.features));
-    dataToSubmit.append("includes", JSON.stringify(formData.includes));
 
+    if (category !== "custom") {
+      dataToSubmit.append("description", formData.description);
+      dataToSubmit.append("projectContext", formData.projectContext);
+    }
+
+    if (category === "iot") {
+      dataToSubmit.append("stock", formData.stock);
+    } else if (category === "web") {
+      dataToSubmit.append("stock", 999999);
+    } else if (category === "custom") {
+      dataToSubmit.append("stock", 0);
+    }
+
+    if (category === "iot" || category === "web") {
+      dataToSubmit.append("projectLink", formData.projectLink);
+    }
+
+    if (category !== "web") {
+      dataToSubmit.append("features", JSON.stringify(formData.features));
+      dataToSubmit.append("includes", JSON.stringify(formData.includes));
+    }
     if (imageFile) {
       dataToSubmit.append("file", imageFile);
+    } else if (!imagePreview && !imageFile) {
+      dataToSubmit.append("imageUrl", ""); // Clear image on server if removed
+    } else if (imagePreview && !imageFile) {
+      dataToSubmit.append("imageUrl", imagePreview); // Send existing URL if not changed
     }
 
     try {
@@ -142,7 +166,13 @@ const Update = () => {
   };
 
   const inputStyle =
-    "w-full bg-transparent border-b-2 border-zinc-700 text-zinc-200 py-2 text-base focus:outline-none focus:border-emerald-500 transition-colors duration-300";
+    "w-full bg-transparent border-b-2 border-zinc-700 text-zinc-100 py-2 text-base focus:outline-none focus:border-emerald-500 transition-colors duration-300 placeholder-zinc-500";
+  const { category } = formData;
+  const isStockVisible = category === "iot";
+  const isLinkVisible = category === "iot" || category === "web";
+  const isDescriptionVisible = category !== "custom";
+  const isProjectContextVisible = category !== "custom";
+  const isFeatureAndIncludeVisible = category !== "web";
 
   if (isLoading)
     return (
@@ -154,12 +184,12 @@ const Update = () => {
     return <div className="text-center p-10 text-red-500">Error: {error}</div>;
 
   return (
-    <div className="w-full p-4 sm:p-6 md:p-8 bg-zinc-900">
+    <div className="w-full p-4 sm:p-6 md:p-8 bg-zinc-900 min-h-screen">
       <div className="max-w-6xl mx-auto">
-        <header className="pb-6 mb-8 border-b border-zinc-700">
-          <h1 className="text-4xl font-bold text-zinc-100">Update Product</h1>
+        <header className="pb-6 mb-8 border-b border-zinc-800">
+          <h1 className="text-4xl font-extrabold text-white">Update Product</h1>
           <p className="text-zinc-400 mt-2">
-            Edit the details for "{formData.name}" below.
+            Edit the details for **"{formData.name}"** below.
           </p>
         </header>
 
@@ -169,7 +199,8 @@ const Update = () => {
               <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Product Image
               </label>
-              <div className="mt-2 w-full h-80 rounded-lg border-2 border-dashed border-zinc-600 flex items-center justify-center relative bg-zinc-900 overflow-hidden">
+
+              <div className="mt-2 w-full h-80 rounded-xl border-2 border-dashed border-zinc-600 flex items-center justify-center relative bg-zinc-800 overflow-hidden shadow-inner shadow-zinc-900/50">
                 <input
                   type="file"
                   id="imageUpload"
@@ -178,10 +209,10 @@ const Update = () => {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 {!imagePreview ? (
-                  <div className="text-center">
+                  <div className="text-center p-4">
                     <LuUpload className="mx-auto h-12 w-12 text-zinc-500" />
                     <p className="mt-2 text-sm text-zinc-400">
-                      <span className="font-semibold text-emerald-500">
+                      <span className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer">
                         Upload new image
                       </span>
                     </p>
@@ -193,10 +224,11 @@ const Update = () => {
                       alt="Product Preview"
                       className="w-full h-full object-cover"
                     />
+
                     <button
                       type="button"
                       onClick={removeImage}
-                      className="absolute top-2 right-2 p-1.5 bg-zinc-900/50 rounded-full text-white hover:bg-zinc-900 transition-colors"
+                      className="absolute top-2 right-2 p-1.5 bg-zinc-900/70 rounded-full text-white hover:bg-zinc-800 transition-colors"
                     >
                       <LuX size={18} />
                     </button>
@@ -204,7 +236,6 @@ const Update = () => {
                 )}
               </div>
             </div>
-
             <div className="lg:col-span-2 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
@@ -224,6 +255,7 @@ const Update = () => {
                     className={inputStyle}
                   />
                 </div>
+
                 <div>
                   <label
                     htmlFor="category"
@@ -236,13 +268,23 @@ const Update = () => {
                     id="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className={`${inputStyle} mt-2`}
+                    className={`block w-full bg-zinc-800 border-2 border-zinc-700 text-zinc-100 py-2.5 px-3 pr-8 rounded-lg text-sm appearance-none focus:outline-none focus:border-emerald-500 transition-colors mt-2`}
                   >
-                    <option value="iot">IoT</option>
-                    <option value="web dev">Web Dev</option>
+                    <option value="iot" className="bg-zinc-900">
+                      IoT
+                    </option>
+
+                    <option value="web" className="bg-zinc-900">
+                      WEB
+                    </option>
+
+                    <option value="custom" className="bg-zinc-900">
+                      Custom
+                    </option>
                   </select>
                 </div>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <label
@@ -263,145 +305,181 @@ const Update = () => {
                     className={inputStyle}
                   />
                 </div>
+
+                {isStockVisible && (
+                  <div>
+                    <label
+                      htmlFor="stock"
+                      className="block text-sm font-medium text-zinc-300"
+                    >
+                      Stock Quantity
+                    </label>
+                    <input
+                      type="number"
+                      name="stock"
+                      id="stock"
+                      value={formData.stock}
+                      onChange={handleChange}
+                      required
+                      min="0"
+                      className={inputStyle}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {isLinkVisible && (
                 <div>
                   <label
-                    htmlFor="stock"
+                    htmlFor="projectLink"
                     className="block text-sm font-medium text-zinc-300"
                   >
-                    Stock Quantity
+                    Project Drive Link
                   </label>
                   <input
-                    type="number"
-                    name="stock"
-                    id="stock"
-                    value={formData.stock}
+                    type="url"
+                    name="projectLink"
+                    id="projectLink"
+                    value={formData.projectLink || ""}
                     onChange={handleChange}
-                    required
-                    min="0"
+                    required={isLinkVisible}
+                    placeholder="e.g., Google Drive or GitHub link"
                     className={inputStyle}
                   />
                 </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="projectContext"
-                  className="block text-sm font-medium text-zinc-300"
-                >
-                  Project Context
-                </label>
-                <textarea
-                  name="projectContext"
-                  id="projectContext"
-                  value={formData.projectContext}
-                  onChange={handleChange}
-                  rows="3"
-                  className={`${inputStyle} mt-2`}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-zinc-300"
-                >
-                  Description
-                </label>
-                <textarea
-                  name="description"
-                  id="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  rows="6"
-                  className={`${inputStyle} mt-2`}
-                />
-              </div>
+              )}
+
+              {isProjectContextVisible && (
+                <div>
+                  <label
+                    htmlFor="projectContext"
+                    className="block text-sm font-medium text-zinc-300"
+                  >
+                    Project Context
+                  </label>
+                  <textarea
+                    name="projectContext"
+                    id="projectContext"
+                    value={formData.projectContext}
+                    onChange={handleChange}
+                    rows="3"
+                    required
+                    className={`${inputStyle} mt-2`}
+                  />
+                </div>
+              )}
+
+              {isDescriptionVisible && (
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-zinc-300"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    id="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    required
+                    rows="6"
+                    className={`${inputStyle} mt-2`}
+                  />
+                </div>
+              )}
             </div>
           </div>
+          {isFeatureAndIncludeVisible && (
+            <div className="mt-10 pt-6 border-t border-zinc-700 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Features
+                </label>
 
-          <div className="mt-10 pt-6 border-t border-zinc-700 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Features
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={featureInput}
-                  onChange={(e) => setFeatureInput(e.target.value)}
-                  placeholder="Add a feature"
-                  className={inputStyle}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleAddItem("feature")}
-                  className="p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                >
-                  <LuPlus size={18} />
-                </button>
-              </div>
-              <ul className="mt-4 space-y-2">
-                {formData.features.map((feature, index) => (
-                  <li
-                    key={index}
-                    className="flex justify-between items-center bg-zinc-800 p-2 rounded"
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={featureInput}
+                    onChange={(e) => setFeatureInput(e.target.value)}
+                    placeholder="Add a feature"
+                    className={inputStyle}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddItem("feature")}
+                    className="p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex-shrink-0"
                   >
-                    <span className="text-zinc-300">{feature}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem("feature", index)}
-                      className="text-red-500 hover:text-red-400"
-                    >
-                      <LuTrash2 size={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                What's Included
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={includeInput}
-                  onChange={(e) => setIncludeInput(e.target.value)}
-                  placeholder="Add an included item"
-                  className={inputStyle}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleAddItem("include")}
-                  className="p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                >
-                  <LuPlus size={18} />
-                </button>
-              </div>
-              <ul className="mt-4 space-y-2">
-                {formData.includes.map((item, index) => (
-                  <li
-                    key={index}
-                    className="flex justify-between items-center bg-zinc-800 p-2 rounded"
-                  >
-                    <span className="text-zinc-300">{item}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem("include", index)}
-                      className="text-red-500 hover:text-red-400"
-                    >
-                      <LuTrash2 size={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+                    <LuPlus size={18} />
+                  </button>
+                </div>
 
-          <footer className="mt-12 pt-6 border-t border-zinc-700 flex justify-end items-center gap-4">
+                <ul className="mt-4 space-y-2">
+                  {formData.features.map((feature, index) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center bg-zinc-800 p-2 rounded border border-zinc-700 text-sm"
+                    >
+                      <span className="text-zinc-300">{feature}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem("feature", index)}
+                        className="text-red-500 hover:text-red-400 p-1"
+                      >
+                        <LuTrash2 size={16} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  What's Included
+                </label>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={includeInput}
+                    onChange={(e) => setIncludeInput(e.target.value)}
+                    placeholder="Add an included item"
+                    className={inputStyle}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddItem("include")}
+                    className="p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex-shrink-0"
+                  >
+                    <LuPlus size={18} />
+                  </button>
+                </div>
+
+                <ul className="mt-4 space-y-2">
+                  {formData.includes.map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center bg-zinc-800 p-2 rounded border border-zinc-700 text-sm"
+                    >
+                      <span className="text-zinc-300">{item}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem("include", index)}
+                        className="text-red-500 hover:text-red-400 p-1"
+                      >
+                        <LuTrash2 size={16} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+          <footer className="mt-12 pt-6 border-t border-zinc-800 flex justify-end items-center gap-4">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="px-6 py-2.5 rounded-lg text-zinc-300 font-semibold hover:bg-zinc-800 transition-colors"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-lg text-zinc-300 font-semibold hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

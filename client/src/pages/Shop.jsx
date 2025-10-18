@@ -85,7 +85,7 @@ const Shop = () => {
     <>
       <div className="shop-background">
         <Header />
-        {location.pathname === "/shop" || location.pathname === "/shop/" ? (
+        {location.pathname === "/" ? (
           <section
             id="projects"
             className="py-16 sm:py-20 text-slate-900 h-fit"
@@ -104,14 +104,14 @@ const Shop = () => {
                     IoT Projects
                   </button>
                   <button
-                    onClick={() => setActiveCategory("web dev")}
+                    onClick={() => setActiveCategory("web")}
                     className={`px-5 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      activeCategory === "web dev"
+                      activeCategory === "web"
                         ? "bg-orange-600 text-white shadow-md shadow-sky-600/20"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white"
                     }`}
                   >
-                    Web Dev Projects
+                    Web Projects
                   </button>
                 </div>
               </div>

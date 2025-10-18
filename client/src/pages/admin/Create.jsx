@@ -107,7 +107,7 @@ const Create = () => {
     dataToSubmit.append("category", formData.category);
     dataToSubmit.append("file", imageFile);
 
-    if (category !== "web") {
+    if (category !== "custom") {
       dataToSubmit.append("features", JSON.stringify(formData.features));
       dataToSubmit.append("includes", JSON.stringify(formData.includes));
     }
@@ -143,7 +143,7 @@ const Create = () => {
   const isLinkVisible = category === "iot" || category === "web";
   const isDescriptionVisible = category !== "custom";
   const isProjectContextVisible = category !== "custom";
-  const isFeatureAndIncludeVisible = category !== "web";
+  const isFeatureAndIncludeVisible = category !== "custom";
   return (
     <div className="w-full p-4 sm:p-6 md:p-8 bg-zinc-900 min-h-screen">
       <div className="max-w-6xl mx-auto">
