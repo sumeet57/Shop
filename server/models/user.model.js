@@ -21,16 +21,12 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "user"],
       default: "user",
     },
-    address: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-    pincode: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+    addresses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+      },
+    ],
   },
   {
     // Automatically add createdAt and updatedAt fields

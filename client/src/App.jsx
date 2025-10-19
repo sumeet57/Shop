@@ -16,10 +16,19 @@ import Checkout from "./pages/shop/Checkout.jsx";
 import Logout from "./pages/Logout.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import PaymentSuccess from "./pages/shop/PaymentSuccess.jsx";
+import Profile from "./pages/Profile.jsx";
 function App() {
   return (
     <Router>
       <Routes>
+        <Route
+          path="/profile"
+          element={
+            <UserContextProvider>
+              <Profile />
+            </UserContextProvider>
+          }
+        />
         <Route
           path="/"
           element={
