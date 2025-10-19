@@ -17,6 +17,8 @@ import Logout from "./pages/Logout.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import PaymentSuccess from "./pages/shop/PaymentSuccess.jsx";
 import Profile from "./pages/Profile.jsx";
+import Header from "./components/Shop/Header.jsx";
+import Footer from "./components/Footer.jsx";
 function App() {
   return (
     <Router>
@@ -25,7 +27,9 @@ function App() {
           path="/profile"
           element={
             <UserContextProvider>
+              <Header />
               <Profile />
+              <Footer />
             </UserContextProvider>
           }
         />

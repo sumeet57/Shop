@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema(
       index: true,
       select: false,
     },
+    phone: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     role: {
       type: String,
       enum: ["admin", "user"],
@@ -26,7 +31,6 @@ const userSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Address",
-        // select: false,
       },
     ],
   },

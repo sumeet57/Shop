@@ -1,4 +1,5 @@
 import Address from "../models/address.model.js";
+import User from "../models/user.model.js";
 
 export const addAddress = async (req, res) => {
   const userId = req.userId;
@@ -22,6 +23,10 @@ export const addAddress = async (req, res) => {
       pinCode,
     });
     await newAddress.save();
+
+    const user = await User.findById(userId);
+    user.addresses.push(newAddress._id);
+    await user.save();
 
     // get all addresses of user
     const userAddresses = await Address.find({ user: userId });

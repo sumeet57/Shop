@@ -168,15 +168,36 @@ export const login = async (req, res) => {
 export const getUser = async (req, res) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId).select(
-      "email name role addresses"
-    );
+    const user = await User.findById(userId)
+      .select("email name role addresses phone")
+      .populate("addresses");
+
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
     res.status(200).json({ user });
   } catch (error) {
     res.status(500).json({ message: "Server error while fetching user." });
+  }
+};
+export const updateUser = async (req, res) => {
+  const userId = req.userId;
+  const { name, phone } = req.body;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    user.name = name || user.name;
+    user.phone = phone || user.phone;
+    await user.save();
+    res.status(200).json({
+      message: "User profile updated successfully.",
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error while updating user." });
   }
 };
 export const logout = (req, res) => {
