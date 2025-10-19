@@ -11,9 +11,9 @@ import { getUser } from "../controllers/user.controller.js";
 const userRouter = Router();
 
 userRouter.get("/profile", Authenticate, getUser);
-userRouter.post("/add-address", Authenticate, addAddress);
-userRouter.get("/get-addresses", Authenticate, getAddresses);
-userRouter.post("/update-address/:id", Authenticate, updateAddress);
-userRouter.delete("/delete-address/:id", Authenticate, deleteAddress);
+userRouter.get("/addresses", Authenticate, getAddresses);
+userRouter.post("/addresses", Authenticate, addAddress);
+userRouter.put("/addresses/:id", Authenticate, updateAddress);
+userRouter.delete("/addresses/:id", Authenticate, deleteAddress);
 
 export default userRouter;

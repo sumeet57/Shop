@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       // Create an index for faster queries by email
       index: true,
+      select: false,
     },
     role: {
       type: String,
@@ -25,6 +26,7 @@ const userSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Address",
+        // select: false,
       },
     ],
   },

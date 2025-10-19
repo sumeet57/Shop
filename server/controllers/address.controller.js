@@ -27,7 +27,7 @@ export const addAddress = async (req, res) => {
     const userAddresses = await Address.find({ user: userId });
     res.status(201).json({
       message: "Address added successfully",
-      addresses: userAddresses,
+      userAddresses,
     });
   } catch (error) {
     console.error(error);
@@ -68,7 +68,7 @@ export const updateAddress = async (req, res) => {
     const userAddresses = await Address.find({ user: userId });
     res.status(200).json({
       message: "Address updated successfully",
-      address: userAddresses,
+      userAddresses,
     });
   } catch (error) {
     console.error(error);

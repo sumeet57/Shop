@@ -186,21 +186,24 @@ const AddressCard = ({ address, onUpdate, onDelete }) => {
     </div>
   );
 };
-
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [addresses, setAddresses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch("/api/auth/me");
+      const response = await fetch(`${backendUrl}/api/user/profile`, {
+        credentials: "include",
+        method: "GET",
+      });
       const data = await response.json();
-      console.log("Fetched user data:", data);
+
       if (!response.ok) throw new Error(data.message || "Failed to fetch user");
-      setUser(data);
+      setUser(data.user);
     } catch (error) {
       console.error("User fetch error:", error);
     }
@@ -208,11 +211,16 @@ const Profile = () => {
 
   const fetchAddresses = async () => {
     try {
-      const response = await fetch("/api/user/addresses");
+      const response = await fetch(`${backendUrl}/api/user/addresses`, {
+        credentials: "include",
+        method: "GET",
+      });
+
       const data = await response.json();
+
       if (!response.ok)
         throw new Error(data.message || "Failed to fetch addresses");
-      setAddresses(data);
+      setAddresses(data.addresses || []);
     } catch (error) {
       console.error("Addresses fetch error:", error);
     }
@@ -241,14 +249,15 @@ const Profile = () => {
     const isUpdate = !!addressData._id;
     const method = isUpdate ? "PUT" : "POST";
     const url = isUpdate
-      ? `/api/user/addresses/${addressData._id}`
-      : "/api/user/addresses";
+      ? `${backendUrl}/api/user/addresses/${addressData._id}`
+      : `${backendUrl}/api/user/addresses`;
 
     try {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(addressData),
+        credentials: "include",
       });
 
       const savedAddress = await response.json();
@@ -277,9 +286,13 @@ const Profile = () => {
       return;
 
     try {
-      const response = await fetch(`/api/user/addresses/${addressId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${backendUrl}/api/user/addresses/${addressId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
