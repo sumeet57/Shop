@@ -168,9 +168,7 @@ export const login = async (req, res) => {
 export const getUser = async (req, res) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId)
-      .select("email name role addresses phone")
-      .populate("addresses");
+    const user = await User.findById(userId).select("email name role phone");
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const clickHandler = () => {
-    navigate(`/shop/${product._id}`);
+    navigate(`/${product._id}`);
   };
   return (
     <>
@@ -51,6 +51,7 @@ const ProductCard = ({ product }) => {
             View Project
           </button>
           <button
+            onClick={clickHandler}
             className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-500/50 hover:bg-indigo-700 transition-colors duration-200 ${
               product?.stock <= 0 ? "opacity-50 cursor-not-allowed" : ""
             }`}

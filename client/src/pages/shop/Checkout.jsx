@@ -1,33 +1,91 @@
 import React, { useState, useEffect } from "react";
-import {
-  redirect,
-  useLocation,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../../Context/User.context";
 import { toast } from "react-toastify";
-// Ensure you have also included the ToastContainer component in your application root
+import { FaSearch } from "react-icons/fa";
 
-const VALID_IOT_PINCODES = ["400001", "400002", "400003", "400004", "400005"];
+const WESTERN_LINE_STATIONS = [
+  "Churchgate",
+  "Marine Lines",
+  "Charni Road",
+  "Grant Road",
+  "Mumbai Central",
+  "Mahalaxmi",
+  "Lower Parel",
+  "Prabhadevi",
+  "Dadar",
+  "Matunga Road",
+  "Mahim",
+  "Bandra",
+  "Khar Road",
+  "Santacruz",
+  "Vile Parle",
+  "Andheri",
+  "Jogeshwari",
+  "Ram Mandir",
+  "Goregaon",
+  "Malad",
+  "Kandivali",
+  "Borivali",
+  "Dahisar",
+  "Mira Road",
+  "Bhayandar",
+  "Naigaon",
+  "Vasai Road",
+  "Nallasopara",
+  "Virar",
+];
 
-const IotPincodeChecker = ({ pincode, isIotProduct }) => {
-  if (!isIotProduct) return null;
+const StationSelector = ({ selectedStation, setSelectedStation }) => {
+  const [search, setSearch] = useState("");
 
-  if (pincode.length === 0) return null;
-
-  if (!VALID_IOT_PINCODES.includes(pincode)) {
-    return (
-      <p className="text-sm text-red-400 font-semibold mt-2">
-        ⚠️ Not deliverable to this Pincode. Please check your location.
-      </p>
-    );
-  }
+  const filteredStations = WESTERN_LINE_STATIONS.filter((station) =>
+    station.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <p className="text-sm text-green-400 font-semibold mt-2">
-      ✅ Deliverable within 2 - 3 business days.
-    </p>
+    <div className="mt-4">
+      <label className="block text-zinc-400 font-medium mb-2 text-sm">
+        Select Nearest Western Line Station
+      </label>
+
+      <div className="relative mb-3">
+        <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-500" />
+        <input
+          type="text"
+          placeholder="Search station..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg py-3 pl-10 pr-3 placeholder-zinc-500 focus:ring-2 focus:ring-emerald-500 outline-none transition"
+        />
+      </div>
+
+      <div className="max-h-48 overflow-y-auto border border-zinc-700 rounded-lg bg-zinc-900 shadow-inner">
+        {filteredStations.length > 0 ? (
+          filteredStations.map((station) => (
+            <button
+              key={station}
+              onClick={() => setSelectedStation(station)}
+              className={`w-full text-left px-4 py-2 rounded-md transition ${
+                selectedStation === station
+                  ? "bg-emerald-600 text-white"
+                  : "hover:bg-zinc-800 text-zinc-300"
+              }`}
+            >
+              {station}
+            </button>
+          ))
+        ) : (
+          <p className="p-3 text-zinc-500 text-sm italic">No station found</p>
+        )}
+      </div>
+
+      {selectedStation && (
+        <p className="mt-3 text-sm text-green-400 font-semibold">
+          ✅ Deliverable via: {selectedStation} Station
+        </p>
+      )}
+    </div>
   );
 };
 
@@ -38,7 +96,7 @@ const Checkout = () => {
   const productId = params.productId;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const product = location.state.product;
+  const product = location.state?.product;
   const isIotProduct = product?.category?.toLowerCase() === "iot";
 
   const { user } = React.useContext(UserContext);
@@ -47,10 +105,8 @@ const Checkout = () => {
     userId: null,
     userName: "Guest",
     userEmail: "",
-    productId: productId,
-    userAddress: "",
     userPhone: "",
-    userPincode: "",
+    selectedStation: "",
   });
 
   useEffect(() => {
@@ -60,17 +116,13 @@ const Checkout = () => {
         userId: user._id || null,
         userName: user.name || "Guest",
         userEmail: user.email || "",
+        userPhone: user.phone || "",
       }));
     }
   }, [user]);
 
   const handleInputChange = (e) => {
-    let { name, value } = e.target;
-
-    if (name === "userAddress") {
-      value = value.substring(0, 300);
-    }
-
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
@@ -78,17 +130,9 @@ const Checkout = () => {
   };
 
   const handleBuyNow = async () => {
-    // 1. Alert that payment gateway is not integrated
     toast.error("Payment gateway not integrated.");
 
-    const checkoutData = {
-      ...formData,
-    };
-
-    if (!isIotProduct) {
-      delete checkoutData.userPincode;
-      delete checkoutData.userAddress;
-    }
+    const checkoutData = { ...formData, productId };
 
     try {
       const res = await fetch(`${backendUrl}/api/payments/checkout-mock`, {
@@ -106,7 +150,6 @@ const Checkout = () => {
         console.log("Mock Checkout Success:", data);
       } else {
         toast.error("Mock Checkout Failed. Please try again.");
-        console.error("Failed to complete mock checkout");
       }
     } catch (err) {
       toast.error("Network error during checkout.");
@@ -114,17 +157,14 @@ const Checkout = () => {
     }
   };
 
-  const isPincodeValid = VALID_IOT_PINCODES.includes(formData.userPincode);
   const isFormValid = isIotProduct
-    ? formData.userPhone &&
-      formData.userPincode &&
-      isPincodeValid &&
-      formData.userAddress
+    ? formData.userPhone && formData.selectedStation
     : formData.userPhone;
 
   return (
     <div className="product_checkout min-h-screen text-white p-4 sm:p-8 pt-20">
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Order Summary */}
         <div className="lg:col-span-1 h-fit">
           {product && (
             <div className="sticky top-20 bg-zinc-800 p-6 rounded-2xl shadow-xl shadow-zinc-900/50 border border-zinc-700/50">
@@ -154,7 +194,11 @@ const Checkout = () => {
                 <p className="text-3xl font-extrabold text-green-400">
                   ₹ {product.price.toLocaleString("en-IN")}
                 </p>
-                <p className="text-sm text-zinc-400">
+                <p
+                  className={`text-sm text-zinc-400 ${
+                    product.category == "web" ? "hidden" : ""
+                  }`}
+                >
                   Stock Remaining:{" "}
                   <span className="font-bold text-slate-100">
                     {product.stock}
@@ -165,16 +209,26 @@ const Checkout = () => {
                   {isIotProduct ? (
                     <>
                       <p className="text-sm font-semibold text-yellow-400">
-                        Estimated Delivery: 2 - 3 business days.
+                        Estimated Delivery: 2 - 3 business days via local pickup
+                        station.
                       </p>
                       <p className="text-xs text-red-400 mt-1">
-                        *Note: This IOT product is currently deliverable only in
-                        specified Pincodes of Mumbai.
+                        *Note: IoT products are available only for specific
+                        Mumbai stations.
                       </p>
                     </>
                   ) : (
-                    <p className="text-sm font-semibold text-yellow-400">
-                      Digital Delivery: Instant (Web Dev).
+                    <p className="text-sm text-yellow-400">
+                      <strong className="text-white">Digital Delivery:</strong>{" "}
+                      The product is instantly added to your account's{" "}
+                      <span className="text-green-300">Purchase Section</span>.
+                      The Google Drive link{" "}
+                      <span className="text-green-300">
+                        (files & source-code)
+                      </span>
+                      {" ,"}access will be granted to your{" "}
+                      <span className="text-green-300">registered email</span>{" "}
+                      within 12 hours.
                     </p>
                   )}
                 </div>
@@ -183,17 +237,18 @@ const Checkout = () => {
           )}
         </div>
 
+        {/* Contact & Delivery Section */}
         <div className="lg:col-span-2 bg-zinc-800 p-6 sm:p-8 rounded-2xl shadow-xl shadow-zinc-900/50 border border-zinc-700/50">
           <h2 className="text-3xl font-bold mb-8 text-center text-emerald-400">
-            Contact & Shipping
+            Contact & Delivery
           </h2>
+
           <div className="space-y-5">
             <input
               className="w-full border border-zinc-700 bg-zinc-900/50 p-4 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
               placeholder="Name"
               type="text"
               name="userName"
-              id="name"
               value={formData.userName}
               readOnly={!user}
             />
@@ -202,71 +257,28 @@ const Checkout = () => {
               placeholder="Email"
               type="email"
               name="userEmail"
-              id="email"
               value={formData.userEmail}
               readOnly={!user}
             />
-
             <input
               className="w-full border border-zinc-700 bg-zinc-900/50 p-4 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
               placeholder="Phone Number"
               type="tel"
               name="userPhone"
-              id="phone"
               value={formData.userPhone}
               onChange={handleInputChange}
             />
 
-            <div className="grid grid-cols-2 gap-5">
-              <input
-                className="w-full border border-zinc-700 bg-zinc-900/50 p-4 rounded-lg text-white placeholder-zinc-500"
-                placeholder="City"
-                type="text"
-                value="Mumbai"
-                readOnly
-              />
-              <input
-                className="w-full border border-zinc-700 bg-zinc-900/50 p-4 rounded-lg text-white placeholder-zinc-500"
-                placeholder="Country"
-                type="text"
-                value="India"
-                readOnly
-              />
-            </div>
-
             {isIotProduct && (
-              <>
-                <input
-                  className="w-full border border-zinc-700 bg-zinc-900/50 p-4 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
-                  placeholder="Pincode"
-                  type="text"
-                  name="userPincode"
-                  id="pincode"
-                  value={formData.userPincode}
-                  onChange={handleInputChange}
-                />
-
-                <IotPincodeChecker
-                  pincode={formData.userPincode}
-                  isIotProduct={isIotProduct}
-                />
-
-                <div className="relative">
-                  <textarea
-                    className="w-full border border-zinc-700 bg-zinc-900/50 p-4 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors min-h-[120px]"
-                    placeholder="Shipping Address (Max 300 characters)"
-                    name="userAddress"
-                    id="address"
-                    value={formData.userAddress}
-                    onChange={handleInputChange}
-                  />
-                  <span className="absolute bottom-3 right-4 text-xs text-zinc-500">
-                    {formData.userAddress.length}/300
-                  </span>
-                </div>
-              </>
+              <StationSelector
+                selectedStation={formData.selectedStation}
+                setSelectedStation={(station) =>
+                  setFormData({ ...formData, selectedStation: station })
+                }
+              />
             )}
           </div>
+
           <button
             className="mt-8 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg shadow-emerald-600/40 transition-all duration-300 ease-in-out transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none disabled:cursor-not-allowed"
             onClick={handleBuyNow}

@@ -128,13 +128,8 @@ const Shop = () => {
                 {!isLoading && !error && (
                   <div className="flex justify-center items-center flex-wrap gap-7 h-fit">
                     {filteredProducts.length > 0 ? (
-                      filteredProducts.map((project) => (
-                        <>
-                          <ProductCard
-                            key={project._id + 2}
-                            product={project}
-                          />
-                        </>
+                      filteredProducts.map((project, i) => (
+                        <ProductCard key={i} product={project} />
                       ))
                     ) : (
                       <div className="col-span-full text-center py-12">

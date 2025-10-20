@@ -25,6 +25,7 @@ const Product = () => {
           throw new Error("Could not find the requested product.");
         }
         const data = await res.json();
+        // console.log(data);
         setProduct(data);
       } catch (err) {
         setError(err.message);
@@ -66,7 +67,7 @@ const Product = () => {
 
   return (
     <>
-      {location.pathname === `/shop/${productId}` ? (
+      {location.pathname === `/${productId}` ? (
         <div className="product_detail text-white min-h-screen">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-start">
@@ -154,7 +155,9 @@ const Product = () => {
                   <p className="text-sm font-medium mb-4">
                     {product.stock > 0 ? (
                       <span className="text-green-400 font-bold">
-                        In Stock ({product.stock} available)
+                        {product.category != "web"
+                          ? `In Stock (${product.stock} available)`
+                          : "Available for purchase"}
                       </span>
                     ) : (
                       <span className="text-red-400 font-bold">

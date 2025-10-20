@@ -132,7 +132,7 @@ const Update = () => {
       dataToSubmit.append("projectLink", formData.projectLink);
     }
 
-    if (category !== "web") {
+    if (category !== "custom") {
       dataToSubmit.append("features", JSON.stringify(formData.features));
       dataToSubmit.append("includes", JSON.stringify(formData.includes));
     }
@@ -172,7 +172,7 @@ const Update = () => {
   const isLinkVisible = category === "iot" || category === "web";
   const isDescriptionVisible = category !== "custom";
   const isProjectContextVisible = category !== "custom";
-  const isFeatureAndIncludeVisible = category !== "web";
+  const isFeatureAndIncludeVisible = category !== "custom";
 
   if (isLoading)
     return (

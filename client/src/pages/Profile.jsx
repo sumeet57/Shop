@@ -6,6 +6,7 @@ import {
   FaShoppingCart,
   FaEdit,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 // --- START: Input Group Component ---
 const InputGroup = ({
@@ -139,184 +140,13 @@ const ProfileEditModal = ({ isOpen, onClose, user, onSave }) => {
 };
 // --- END: Profile Edit Modal Component ---
 
-const AddressModal = ({ isOpen, onClose, onSave, initialData }) => {
-  const [formData, setFormData] = useState({
-    _id: null,
-    address: "",
-    city: "",
-    state: "",
-    country: "",
-    pinCode: "",
-  });
-
-  const isUpdate = !!initialData;
-  const modalTitle = isUpdate ? "Update Address" : "Add New Address";
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    } else {
-      setFormData({
-        _id: null,
-        address: "",
-        city: "",
-        state: "",
-        country: "",
-        pinCode: "",
-      });
-    }
-  }, [initialData, isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (
-      !formData.address ||
-      !formData.city ||
-      !formData.state ||
-      !formData.country ||
-      !formData.pinCode
-    ) {
-      alert("Please fill in all fields.");
-      return;
-    }
-    onSave(formData);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-zinc-950 bg-opacity-75 flex justify-center items-center z-50 p-4">
-      <div className="bg-zinc-900 rounded-xl shadow-2xl shadow-indigo-500/10 w-full max-w-lg p-6 relative text-zinc-100 border border-zinc-700 transition duration-300">
-        <h2 className="text-2xl font-bold text-indigo-400 mb-4 border-b border-zinc-700 pb-2">
-          {modalTitle}
-        </h2>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-indigo-400 transition"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
-          </svg>
-        </button>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <InputGroup
-            label="Street Address"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputGroup
-              label="City"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-            />
-            <InputGroup
-              label="State/Province"
-              name="state"
-              value={formData.state}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputGroup
-              label="Country"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-            />
-            <InputGroup
-              label="Pin Code"
-              name="pinCode"
-              value={formData.pinCode}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="pt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 mr-3 border border-zinc-700 text-zinc-300 font-medium rounded-lg hover:bg-zinc-800 transition duration-150"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={`px-6 py-2 font-medium text-white rounded-lg shadow-md transition duration-150 transform hover:scale-[1.02] ${
-                isUpdate
-                  ? "bg-indigo-600 hover:bg-indigo-700"
-                  : "bg-green-600 hover:bg-green-700"
-              }`}
-            >
-              {isUpdate ? "Save Changes" : "Add Address"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-const AddressCard = ({ address, onUpdate, onDelete, index }) => {
-  const { address: street, city, state, country, pinCode, _id } = address;
-
-  return (
-    <div className="bg-zinc-800 p-5 rounded-xl shadow-lg shadow-zinc-800/50 hover:shadow-indigo-500/20 transition duration-300 border border-zinc-700 w-full">
-      <h3 className="text-md font-bold text-indigo-400 mb-2">
-        Address No. {index}
-      </h3>
-      <div className="space-y-1 text-zinc-300 text-sm">
-        <p className="font-semibold">{street}</p>
-        <p>
-          {city}, {state} -{" "}
-          <span className="font-medium text-zinc-100">{pinCode}</span>
-        </p>
-        <p className="text-xs italic text-zinc-400">{country}</p>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-zinc-700 flex space-x-3">
-        <button
-          onClick={onUpdate}
-          className="flex-1 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.02]"
-        >
-          Update
-        </button>
-        <button
-          onClick={() => onDelete(_id)}
-          className="flex-1 px-3 py-2 text-sm font-semibold text-red-400 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition duration-150 transform hover:scale-[1.02]"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const Profile = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [addresses, setAddresses] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
-  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [editingAddress, setEditingAddress] = useState(null);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -329,7 +159,6 @@ const Profile = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Failed to fetch user");
       setUser(data.user);
-      setAddresses(data.user.addresses || []);
     } catch (error) {
       console.error("User fetch error:", error);
     }
@@ -365,74 +194,12 @@ const Profile = () => {
     loadData();
   }, []);
 
-  const handleOpenAddressModal = (addressToEdit = null) => {
-    setEditingAddress(addressToEdit);
-    setIsAddressModalOpen(true);
-  };
-
-  const handleCloseAddressModal = () => {
-    setIsAddressModalOpen(false);
-    setEditingAddress(null);
-  };
-
   const handleOpenProfileModal = () => {
     setIsProfileModalOpen(true);
   };
 
   const handleCloseProfileModal = () => {
     setIsProfileModalOpen(false);
-  };
-
-  const handleSaveAddress = async (addressData) => {
-    const isUpdate = !!addressData._id;
-    const method = isUpdate ? "PUT" : "POST";
-    const url = isUpdate
-      ? `${backendUrl}/api/user/addresses/${addressData._id}`
-      : `${backendUrl}/api/user/addresses`;
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(addressData),
-        credentials: "include",
-      });
-
-      const savedAddress = await response.json();
-      if (!response.ok)
-        throw new Error(savedAddress.message || "Failed to save address");
-
-      setAddresses(savedAddress.userAddresses);
-      handleCloseAddressModal();
-    } catch (error) {
-      console.error("Save address error:", error);
-      alert(`Error: ${error.message}`);
-    }
-  };
-
-  const handleDeleteAddress = async (addressId) => {
-    if (!window.confirm("Are you sure you want to delete this address?"))
-      return;
-
-    try {
-      const response = await fetch(
-        `${backendUrl}/api/user/addresses/${addressId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete address");
-      }
-
-      setAddresses(addresses.filter((addr) => addr._id !== addressId));
-    } catch (error) {
-      console.error("Delete address error:", error);
-      alert(`Error: ${error.message}`);
-    }
   };
 
   const handleNavClick = (action) => {
@@ -503,52 +270,12 @@ const Profile = () => {
           <FaShoppingCart className="mr-2" /> My Purchases
         </button>
         <button
-          onClick={() => handleNavClick("Logout")}
+          onClick={() => navigate("/logout")}
           className="flex items-center px-4 py-2 text-sm font-medium text-red-400 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition duration-150 transform hover:scale-[1.02]"
         >
           <FaSignOutAlt className="mr-2" /> Logout
         </button>
       </div>
-
-      {/* Address Section */}
-      <section className="bg-zinc-900 shadow-xl shadow-indigo-500/10 rounded-xl p-6 border border-zinc-800">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-indigo-400">
-            Saved Addresses
-          </h2>
-          <button
-            onClick={() => handleOpenAddressModal()}
-            className="flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-150 transform hover:scale-[1.02]"
-          >
-            <FaPlus className="mr-2" /> Add Address
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {addresses.length > 0 ? (
-            addresses.map((address, index) => (
-              <AddressCard
-                key={address._id}
-                address={address}
-                index={index + 1}
-                onUpdate={() => handleOpenAddressModal(address)}
-                onDelete={handleDeleteAddress}
-              />
-            ))
-          ) : (
-            <p className="text-zinc-400 italic">
-              No addresses saved. Click “Add Address” to add one.
-            </p>
-          )}
-        </div>
-      </section>
-
-      <AddressModal
-        isOpen={isAddressModalOpen}
-        onClose={handleCloseAddressModal}
-        onSave={handleSaveAddress}
-        initialData={editingAddress}
-      />
 
       <ProfileEditModal
         isOpen={isProfileModalOpen}
