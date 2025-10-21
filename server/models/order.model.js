@@ -8,6 +8,7 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   amount: { type: Number, required: true, min: 1 },
+  selectedStation: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 

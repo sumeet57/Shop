@@ -64,8 +64,7 @@ export const addToCart = async (req, res) => {
 
 export const checkout = async (req, res) => {
   const userId = req.userId;
-  const { productId, userAddress, userPhone, userMessage, userPincode } =
-    req.body;
+  const { productId, userPhone, selectedStation } = req.body;
 
   try {
     const product = await Product.findById(productId);
@@ -76,20 +75,24 @@ export const checkout = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-    user.address = userAddress || user.address;
-    user.pincode = userPincode || user.pincode;
+    user.phone = userPhone || user.phone;
     await user.save();
 
-    const productIsAvailable = product.stock > 0;
+    const productIsAvailable =
+      product.category === "web" ? true : product.stock > 0;
     if (!productIsAvailable) {
       return res.status(400).json({ message: "Product is out of stock." });
     }
-    product.stock -= 1;
+    if (product.category !== "web") {
+      product.stock -= 1;
+    }
     await product.save();
 
     const payment = await Payment.create({
       user: userId,
       product: product._id,
+      amount: product.price,
+      selectedStation: selectedStation,
     });
 
     await payment.save();
@@ -105,8 +108,7 @@ export const checkout = async (req, res) => {
         customer_name: user.name,
       },
       order_meta: {
-        return_url: `${process.env.CLIENT_URL}/shop/dashboard`,
-        notify_url: `${process.env.SERVER_URL}/api/payments/webhook`,
+        return_url: `${process.env.CLIENT_URL}/`,
         payment_methods: "upi",
       },
       cart_details: {
@@ -127,13 +129,13 @@ export const checkout = async (req, res) => {
       ).toISOString(),
       order_note: `Order for ${product.name}`,
     };
-    console.log("Creating order with data:", order_data);
     const response = await cashfree.PGCreateOrder(order_data);
 
     if (response.data.payment_session_id) {
       res.status(200).json({
         paymentLink: response.data.payment_link,
         paymentSessionId: response.data.payment_session_id,
+        orderId: payment._id,
       });
     } else {
       res.status(500).json({ message: "Failed to create payment session." });

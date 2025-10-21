@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../../Context/User.context";
 import { toast } from "react-toastify";
 import { FaSearch } from "react-icons/fa";
+import { load } from "@cashfreepayments/cashfree-js";
 
 const WESTERN_LINE_STATIONS = [
   "Churchgate",
@@ -96,6 +97,16 @@ const Checkout = () => {
   const productId = params.productId;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+  const [OrderId, setOrderId] = useState(null);
+
+  let cashfree;
+  const initializeSdk = async () => {
+    cashfree = await load({
+      mode: "SANDBOX",
+    });
+  };
+  initializeSdk();
+
   const product = location.state?.product;
   const isIotProduct = product?.category?.toLowerCase() === "iot";
 
@@ -130,12 +141,10 @@ const Checkout = () => {
   };
 
   const handleBuyNow = async () => {
-    toast.error("Payment gateway not integrated.");
-
     const checkoutData = { ...formData, productId };
 
     try {
-      const res = await fetch(`${backendUrl}/api/payments/checkout-mock`, {
+      const res = await fetch(`${backendUrl}/api/payments/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,14 +155,92 @@ const Checkout = () => {
 
       const data = await res.json();
       if (res.status === 200) {
-        toast.success("Order Placed (Mock Success)!");
-        console.log("Mock Checkout Success:", data);
+        toast.success("Order ID generated successfully!");
+        console.log("data from checkout:", data);
+        setOrderId(data.orderId); // still store for future use
+        await initializeCashfreePayment(data.paymentSessionId, data.orderId);
       } else {
+        console.log(data, res);
         toast.error("Mock Checkout Failed. Please try again.");
       }
     } catch (err) {
       toast.error("Network error during checkout.");
       console.error(err);
+    }
+  };
+
+  const initializeCashfreePayment = async (sessionId, orderId) => {
+    try {
+      const options = {
+        paymentSessionId: sessionId,
+        redirectTarget: "_modal",
+        mode: "SANDBOX",
+      };
+      await cashfree
+        .checkout(options)
+        .then((data) => {
+          console.log("Cashfree payment data:", data);
+          if (data.error) {
+            failedPayment(orderId);
+            return;
+          }
+          verifyPayment(orderId);
+        })
+        .catch((err) => {
+          console.error("Cashfree checkout error:", err);
+        });
+    } catch (err) {
+      console.error("Error in Cashfree payment:", err);
+    }
+  };
+
+  const verifyPayment = async (orderId) => {
+    try {
+      const res = await fetch(`${backendUrl}/api/payments/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ OrderId: orderId }),
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (res.status === 201) {
+        toast.success("Payment verified and order completed!");
+        navigate("/");
+      } else if (res.status === 400) {
+        toast.error("Payment failed or incomplete.");
+      } else if (res.status === 404) {
+        toast.error("Order not found for verification.");
+      } else if (res.status === 500) {
+        toast.error("Server error during payment verification.");
+      } else if (res.status === 409) {
+        toast.info("Product is already in the cart.");
+      } else {
+        toast.error("Unexpected error during payment verification.");
+      }
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+    }
+  };
+  const failedPayment = async (orderId) => {
+    try {
+      const resF = await fetch(`${backendUrl}/api/payments/failed`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ OrderId: orderId }),
+        credentials: "include",
+      });
+      if (resF.status === 200) {
+        toast.error("Payment failed. Please try again.");
+      } else {
+        toast.error("Error reporting failed payment.");
+      }
+    } catch (error) {
+      console.error("Error reporting failed payment:", error);
     }
   };
 
@@ -281,7 +368,7 @@ const Checkout = () => {
 
           <button
             className="mt-8 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg shadow-emerald-600/40 transition-all duration-300 ease-in-out transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none disabled:cursor-not-allowed"
-            onClick={handleBuyNow}
+            // onClick={handleBuyNow}
             disabled={!isFormValid}
           >
             Place Order
