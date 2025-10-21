@@ -159,6 +159,10 @@ const Checkout = () => {
         console.log("data from checkout:", data);
         setOrderId(data.orderId); // still store for future use
         await initializeCashfreePayment(data.paymentSessionId, data.orderId);
+      } else if (res.status === 503) {
+        toast.error(
+          "Payment service is currently unavailable. Please try again later."
+        );
       } else {
         console.log(data, res);
         toast.error("Mock Checkout Failed. Please try again.");
@@ -368,7 +372,7 @@ const Checkout = () => {
 
           <button
             className="mt-8 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg shadow-emerald-600/40 transition-all duration-300 ease-in-out transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none disabled:cursor-not-allowed"
-            // onClick={handleBuyNow}
+            onClick={handleBuyNow}
             disabled={!isFormValid}
           >
             Place Order

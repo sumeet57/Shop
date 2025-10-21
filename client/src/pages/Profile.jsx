@@ -217,7 +217,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 w-full p-4 md:p-8">
+    <div className="profile min-h-screen bg-zinc-950 text-zinc-100 w-full p-4 md:p-8">
       <h1 className="text-4xl font-extrabold text-zinc-100 mb-8 pt-6 border-b border-zinc-700 pb-2">
         User Profile
       </h1>

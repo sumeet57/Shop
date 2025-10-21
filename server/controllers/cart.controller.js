@@ -6,6 +6,7 @@ import User from "../models/user.model.js";
 
 // cashfree integration
 import { Cashfree, CFEnvironment } from "cashfree-pg";
+import { isPaymentServiceEnabled } from "../services/services.js";
 const clientId = process.env.CASHFREE_CLIENT_ID;
 const clientSecret = process.env.CASHFREE_SECRET_ID;
 const cashfree = new Cashfree(CFEnvironment.SANDBOX, clientId, clientSecret);
@@ -63,6 +64,14 @@ export const addToCart = async (req, res) => {
 };
 
 export const checkout = async (req, res) => {
+  // check is payment service is enabled or not
+  const paymentServiceStatus = await isPaymentServiceEnabled();
+
+  if (!paymentServiceStatus) {
+    res.status(503).json({ message: "Payment service is currently disabled." });
+    return;
+  }
+
   const userId = req.userId;
   const { productId, userPhone, selectedStation } = req.body;
 

@@ -2,6 +2,10 @@ import Order from "../models/order.model.js";
 import Payment from "../models/payment.model.js";
 import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js";
+import {
+  isPaymentServiceEnabled,
+  togglePaymentService,
+} from "../services/services.js";
 export const paymentResponse = async (req, res) => {
   try {
     const { OrderId } = req.body;
@@ -94,5 +98,27 @@ export const paymentFailed = async (req, res) => {
     res.status(500).json({
       message: "Server error while processing failed payment.",
     });
+  }
+};
+
+export const paymentServiceToggle = async (req, res) => {
+  try {
+    const { enabled } = req.body;
+    await togglePaymentService(enabled);
+    res.status(200).json({ message: "Payment service status updated." });
+  } catch (error) {
+    console.error("Error toggling payment service:", error);
+  }
+};
+
+export const paymentServiceStatus = async (req, res) => {
+  try {
+    const status = isPaymentServiceEnabled();
+    res.status(200).json({ enabled: status });
+  } catch (error) {
+    console.error("Error fetching payment service status:", error);
+    res
+      .status(500)
+      .json({ message: "Server error while fetching service status." });
   }
 };

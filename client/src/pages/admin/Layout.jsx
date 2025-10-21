@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Products from "./Products";
+import Dashboard from "./Dashboard";
 import {
   LuLayoutDashboard,
   LuPackage,
@@ -10,14 +11,7 @@ import {
 const MainContent = ({ currentLink }) => {
   return (
     <div className="w-full p-4 md:p-8">
-      {currentLink === "dashboard" && (
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700/50 min-h-[70vh]">
-          <h1 className="text-3xl font-bold text-gray-100 mb-6 capitalize">
-            {currentLink} Overview
-          </h1>
-          <div className="text-gray-400">Dashboard Overview</div>
-        </div>
-      )}
+      {currentLink === "dashboard" && <Dashboard />}
       {currentLink === "products" && <Products />}
       {currentLink === "orders" && (
         <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700/50 min-h-[70vh]">
