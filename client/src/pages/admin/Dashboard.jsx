@@ -63,7 +63,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-950 text-white p-4">
+    <div className="h-fit flex flex-col items-center justify-center text-white p-4">
       <div className="max-w-md w-full bg-neutral-900 rounded-2xl shadow-lg p-6 text-center">
         <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
 
