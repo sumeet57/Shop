@@ -9,6 +9,11 @@ const orderSchema = new mongoose.Schema({
   },
   amount: { type: Number, required: true, min: 1 },
   selectedStation: { type: String, required: true },
+  status: {
+    type: String,
+    enum: ["confirmed", "making", "shipped", "delivered", "cancelled"],
+    default: "confirmed",
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

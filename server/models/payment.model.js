@@ -12,7 +12,7 @@ const paymentSchema = new mongoose.Schema(
     selectedStation: { type: String, required: true },
     status: {
       type: String,
-      enum: ["processing", "completed", "failed", "cancelled"],
+      enum: ["processing", "completed", "failed", "expired", "cancelled"],
       default: "processing",
     },
   },

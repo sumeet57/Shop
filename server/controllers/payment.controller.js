@@ -6,6 +6,14 @@ import {
   isPaymentServiceEnabled,
   togglePaymentService,
 } from "../services/services.js";
+
+// cashfree integration
+import { Cashfree, CFEnvironment } from "cashfree-pg";
+// import { isPaymentServiceEnabled } from "../services/services.js";
+const clientId = process.env.CASHFREE_CLIENT_ID;
+const clientSecret = process.env.CASHFREE_SECRET_ID;
+const cashfree = new Cashfree(CFEnvironment.SANDBOX, clientId, clientSecret);
+
 export const paymentResponse = async (req, res) => {
   try {
     const { OrderId } = req.body;
@@ -15,53 +23,91 @@ export const paymentResponse = async (req, res) => {
     if (!paymentSchema) {
       return res.status(404).json({ message: "Payment record not found." });
     }
-    if (paymentSchema.status === "processing") {
-      paymentSchema.status = "completed";
-    }
-    await paymentSchema.save();
 
-    const orderSchema = await Order.create({
-      user: paymentSchema.user,
-      product: paymentSchema.product,
-      amount: paymentSchema.amount,
-      selectedStation: paymentSchema.selectedStation,
-    });
-    await orderSchema.save();
+    const result = await cashfree.PGOrderFetchPayments(OrderId);
+    let responseBody = { message: "Payment response received." }; // Use an object for final response
+    let httpStatus = 201;
 
-    try {
-      let cart = await Cart.findOne(paymentSchema.user);
+    if (result && result.data && result.data.length > 0) {
+      const paymentStatus = result.data[0].payment_status;
+      console.log("Payment fetch result:", paymentStatus);
 
-      if (cart) {
-        const productExists = cart.products.includes(paymentSchema.product);
+      if (paymentStatus === "SUCCESS") {
+        // 1. Create the Order
+        const orderSchema = await Order.create({
+          user: paymentSchema.user,
+          product: paymentSchema.product,
+          amount: paymentSchema.amount,
+          selectedStation: paymentSchema.selectedStation,
+        });
+        await orderSchema.save();
 
-        if (productExists) {
-          return res
-            .status(409)
-            .json({ message: "Product is already in the cart." });
+        // 2. Handle Cart Logic (DO NOT return here)
+        try {
+          let cart = await Cart.findOne({ user: paymentSchema.user }); // Corrected findOne
+
+          if (cart) {
+            const productExists = cart.products.includes(paymentSchema.product);
+
+            if (productExists) {
+              responseBody.message =
+                "Product was already in the cart, order created.";
+              httpStatus = 200;
+            } else {
+              cart.products.push(paymentSchema.product);
+              await cart.save();
+              responseBody.message =
+                "Order created and product added to existing cart.";
+              responseBody.cart = cart;
+              httpStatus = 201;
+            }
+          } else {
+            const newCart = await Cart.create({
+              user: paymentSchema.user,
+              products: [paymentSchema.product],
+            });
+            responseBody.message =
+              "Order created, cart created, and product added.";
+            responseBody.cart = newCart;
+            httpStatus = 201;
+          }
+        } catch (error) {
+          console.error("Error adding to cart:", error);
+          responseBody.message =
+            "Payment SUCCESS, but server error occurred while updating cart.";
+          httpStatus = 500;
         }
 
-        cart.products.push(paymentSchema.product);
-        await cart.save();
-        return res
-          .status(201)
-          .json({ message: "Product added to existing cart.", cart });
-      } else {
-        const newCart = await Cart.create({
-          user: paymentSchema.user,
-          products: [paymentSchema.product],
-        });
-        return res.status(201).json({
-          message: "Cart created and product added.",
-          cart: newCart,
-        });
+        // 3. Set the payment status
+        paymentSchema.status = "completed";
+      } else if (paymentStatus === "FAILED") {
+        paymentSchema.status = "failed";
+        responseBody.message = `Payment ${paymentStatus}.`;
+        httpStatus = 200;
+      } else if (paymentStatus === "PENDING") {
+        paymentSchema.status = "pending";
+        responseBody.message = `Payment ${paymentStatus}.`;
+        httpStatus = 200;
+      } else if (paymentStatus === "EXPIRED") {
+        paymentSchema.status = "expired";
+        responseBody.message = `Payment ${paymentStatus}.`;
+        httpStatus = 200;
+      } else if (paymentStatus === "USER_DROPPED") {
+        paymentSchema.status = "user_dropped";
+        responseBody.message = `Payment ${paymentStatus}.`;
+        httpStatus = 200;
       }
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      res.status(500).json({ message: "Server error while adding to cart." });
+
+      // 4. Save the updated paymentSchema status once
+      await paymentSchema.save();
+    } else {
+      console.log("No payment fetch result found.");
+      responseBody.message = "Payment check failed: No result from gateway.";
+      httpStatus = 500;
     }
 
-    await paymentSchema.save();
-    res.status(201).json({ message: "Payment response received." });
+    // 5. Send the final response
+    res.status(httpStatus).json(responseBody);
   } catch (error) {
     console.error("Error processing payment response:", error);
     res
@@ -69,7 +115,6 @@ export const paymentResponse = async (req, res) => {
       .json({ message: "Server error while processing payment response." });
   }
 };
-
 export const paymentFailed = async (req, res) => {
   try {
     const { OrderId } = req.body;

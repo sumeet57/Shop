@@ -184,10 +184,7 @@ const Checkout = () => {
         .checkout(options)
         .then((data) => {
           console.log("Cashfree payment data:", data);
-          if (data.error) {
-            failedPayment(orderId);
-            return;
-          }
+
           verifyPayment(orderId);
         })
         .catch((err) => {
