@@ -183,8 +183,6 @@ const Checkout = () => {
       await cashfree
         .checkout(options)
         .then((data) => {
-          console.log("Cashfree payment data:", data);
-
           verifyPayment(orderId);
         })
         .catch((err) => {
@@ -207,9 +205,12 @@ const Checkout = () => {
       });
 
       const data = await res.json();
+      console.log("Payment verification response:", data);
       if (res.status === 201) {
         toast.success("Payment verified and order completed!");
-        navigate("/");
+        navigate("../success", {
+          state: { amount: data.amount, OrderId: data.orderId },
+        });
       } else if (res.status === 400) {
         toast.error("Payment failed or incomplete.");
       } else if (res.status === 404) {
@@ -223,25 +224,6 @@ const Checkout = () => {
       }
     } catch (error) {
       console.error("Error verifying payment:", error);
-    }
-  };
-  const failedPayment = async (orderId) => {
-    try {
-      const resF = await fetch(`${backendUrl}/api/payments/failed`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ OrderId: orderId }),
-        credentials: "include",
-      });
-      if (resF.status === 200) {
-        toast.error("Payment failed. Please try again.");
-      } else {
-        toast.error("Error reporting failed payment.");
-      }
-    } catch (error) {
-      console.error("Error reporting failed payment:", error);
     }
   };
 

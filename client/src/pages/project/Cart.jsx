@@ -10,7 +10,7 @@ const PurchasedProductCard = ({ item, backendUrl }) => {
   return (
     <div className="flex items-start space-x-6 bg-zinc-800 p-4 rounded-lg">
       <img
-        src={`${backendUrl}/${correctedImageUrl}`}
+        src={`${correctedImageUrl}`}
         alt={item.name}
         className="h-24 w-24 rounded-md object-cover flex-shrink-0"
       />
@@ -20,7 +20,7 @@ const PurchasedProductCard = ({ item, backendUrl }) => {
             {item.name}
           </h2>
           <p className="text-sm text-zinc-400 line-clamp-2">
-            {item.description}
+            {item.projectContext}
           </p>
         </div>
         <div className="flex items-center justify-end mt-2">
@@ -39,8 +39,7 @@ const PurchasedProductCard = ({ item, backendUrl }) => {
 const Cart = () => {
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const fetchPurchasedItems = async () => {

@@ -19,6 +19,7 @@ import PaymentSuccess from "./pages/shop/PaymentSuccess.jsx";
 import Profile from "./pages/Profile.jsx";
 import Header from "./components/Shop/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import Cart from "./pages/project/Cart.jsx";
 function App() {
   return (
     <Router>
@@ -63,7 +64,7 @@ function App() {
                       }
                     />
                     <Route
-                      path="success/:orderId"
+                      path="success"
                       element={
                         <UserContextProvider>
                           <ScrollToTop />
@@ -104,6 +105,16 @@ function App() {
                 }
               />
             </>
+          }
+        />
+
+        <Route
+          path="/project"
+          element={
+            <UserContextProvider>
+              <ScrollToTop />
+              <Cart />
+            </UserContextProvider>
           }
         />
 

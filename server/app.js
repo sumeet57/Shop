@@ -28,6 +28,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/products", productRouter);
 app.use("/api/payments", paymentRoute);
 app.use("/api/user", userRouter);
-// app.use("/api/cart", cartRouter);
+app.use("/api/cart", cartRouter);
 
 export default app;

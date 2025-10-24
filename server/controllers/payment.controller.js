@@ -7,9 +7,7 @@ import {
   togglePaymentService,
 } from "../services/services.js";
 
-// cashfree integration
 import { Cashfree, CFEnvironment } from "cashfree-pg";
-// import { isPaymentServiceEnabled } from "../services/services.js";
 const clientId = process.env.CASHFREE_CLIENT_ID;
 const clientSecret = process.env.CASHFREE_SECRET_ID;
 const cashfree = new Cashfree(CFEnvironment.SANDBOX, clientId, clientSecret);
@@ -25,7 +23,7 @@ export const paymentResponse = async (req, res) => {
     }
 
     const result = await cashfree.PGOrderFetchPayments(OrderId);
-    let responseBody = { message: "Payment response received." }; // Use an object for final response
+    let responseBody = { message: "Payment response received." };
     let httpStatus = 201;
 
     if (result && result.data && result.data.length > 0) {
@@ -33,7 +31,6 @@ export const paymentResponse = async (req, res) => {
       console.log("Payment fetch result:", paymentStatus);
 
       if (paymentStatus === "SUCCESS") {
-        // 1. Create the Order
         const orderSchema = await Order.create({
           user: paymentSchema.user,
           product: paymentSchema.product,
@@ -42,9 +39,8 @@ export const paymentResponse = async (req, res) => {
         });
         await orderSchema.save();
 
-        // 2. Handle Cart Logic (DO NOT return here)
         try {
-          let cart = await Cart.findOne({ user: paymentSchema.user }); // Corrected findOne
+          let cart = await Cart.findOne({ user: paymentSchema.user });
 
           if (cart) {
             const productExists = cart.products.includes(paymentSchema.product);
@@ -58,7 +54,7 @@ export const paymentResponse = async (req, res) => {
               await cart.save();
               responseBody.message =
                 "Order created and product added to existing cart.";
-              responseBody.cart = cart;
+              // Removed responseBody.cart = cart;
               httpStatus = 201;
             }
           } else {
@@ -68,7 +64,11 @@ export const paymentResponse = async (req, res) => {
             });
             responseBody.message =
               "Order created, cart created, and product added.";
-            responseBody.cart = newCart;
+
+            // CORRECTED: Send order details instead of cart
+            responseBody.orderId = orderSchema._id;
+            responseBody.amount = orderSchema.amount;
+
             httpStatus = 201;
           }
         } catch (error) {
@@ -78,8 +78,13 @@ export const paymentResponse = async (req, res) => {
           httpStatus = 500;
         }
 
-        // 3. Set the payment status
         paymentSchema.status = "completed";
+
+        // Ensure order details are sent even if cart already existed
+        if (!responseBody.orderId) {
+          responseBody.orderId = orderSchema._id;
+          responseBody.amount = orderSchema.amount;
+        }
       } else if (paymentStatus === "FAILED") {
         paymentSchema.status = "failed";
         responseBody.message = `Payment ${paymentStatus}.`;
@@ -98,7 +103,6 @@ export const paymentResponse = async (req, res) => {
         httpStatus = 200;
       }
 
-      // 4. Save the updated paymentSchema status once
       await paymentSchema.save();
     } else {
       console.log("No payment fetch result found.");
@@ -106,43 +110,12 @@ export const paymentResponse = async (req, res) => {
       httpStatus = 500;
     }
 
-    // 5. Send the final response
     res.status(httpStatus).json(responseBody);
   } catch (error) {
     console.error("Error processing payment response:", error);
     res
       .status(500)
       .json({ message: "Server error while processing payment response." });
-  }
-};
-export const paymentFailed = async (req, res) => {
-  try {
-    const { OrderId } = req.body;
-
-    const paymentSchema = await Payment.findById(OrderId);
-    if (!paymentSchema) {
-      return res.status(404).json({ message: "Payment record not found." });
-    }
-
-    const product = await Product.findById(paymentSchema.product);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found." });
-    }
-
-    paymentSchema.status = "failed";
-    await paymentSchema.save();
-
-    if (product.category === "iot") {
-      product.stock += 1;
-      await product.save();
-    }
-
-    res.status(200).json({ message: "Payment marked as failed successfully." });
-  } catch (error) {
-    console.error("Error processing failed payment:", error);
-    res.status(500).json({
-      message: "Server error while processing failed payment.",
-    });
   }
 };
 

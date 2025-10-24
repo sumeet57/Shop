@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  paymentFailed,
   paymentResponse,
   paymentServiceStatus,
   paymentServiceToggle,
@@ -13,7 +12,7 @@ const paymentRoute = Router();
 
 paymentRoute.post("/checkout", Authenticate, checkout);
 paymentRoute.post("/verify", Authenticate, paymentResponse);
-paymentRoute.post("/failed", Authenticate, paymentFailed);
+// paymentRoute.post("/failed", Authenticate, paymentFailed);
 paymentRoute.post(
   "/payment-service",
   Authenticate,
