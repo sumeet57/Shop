@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Products from "./Products";
 import Dashboard from "./Dashboard";
+import Order from "./Order";
 import {
   LuLayoutDashboard,
   LuPackage,
@@ -13,14 +14,7 @@ const MainContent = ({ currentLink }) => {
     <div className="w-full p-4 md:p-8">
       {currentLink === "dashboard" && <Dashboard />}
       {currentLink === "products" && <Products />}
-      {currentLink === "orders" && (
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700/50 min-h-[70vh]">
-          <h1 className="text-3xl font-bold text-gray-100 mb-6 capitalize">
-            {currentLink} Page
-          </h1>
-          <div className="text-gray-400">Orders Page</div>
-        </div>
-      )}
+      {currentLink === "orders" && <Order />}
       {currentLink === "users" && (
         <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700/50 min-h-[70vh]">
           <h1 className="text-3xl font-bold text-gray-100 mb-6 capitalize">
@@ -44,13 +38,13 @@ const Layout = () => {
   const [currentLink, setCurrentLink] = useState("dashboard");
 
   return (
-    <div className="w-full flex lg:flex-row flex-col-reverse min-h-screen bg-gray-900 font-sans">
+    <div className="w-full flex lg:flex-row flex-col-reverse min-h-screen bg-zinc-900 font-sans">
       <aside
-        className="w-full bg-gray-900 z-20  
-        fixed bottom-0 h-16  
+        className="w-full bg-zinc-900 z-20  
+        fixed bottom-0 h-16 border-r-2 border-gray-800
         lg:fixed lg:w-64 lg:top-16 lg:h-[calc(100vh-4rem)]"
       >
-        <nav className="flex lg:flex-col justify-around lg:justify-start lg:mt-4 p-1 lg:p-0">
+        <nav className="flex lg:flex-col justify-around lg:justify-start lg:mt-4 p-1 m-2 lg:p-0">
           {navLinks.map((link) => (
             <button
               key={link.name}

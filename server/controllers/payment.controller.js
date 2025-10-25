@@ -88,19 +88,19 @@ export const paymentResponse = async (req, res) => {
       } else if (paymentStatus === "FAILED") {
         paymentSchema.status = "failed";
         responseBody.message = `Payment ${paymentStatus}.`;
-        httpStatus = 200;
-      } else if (paymentStatus === "PENDING") {
-        paymentSchema.status = "pending";
-        responseBody.message = `Payment ${paymentStatus}.`;
-        httpStatus = 200;
+        httpStatus = 400;
       } else if (paymentStatus === "EXPIRED") {
         paymentSchema.status = "expired";
         responseBody.message = `Payment ${paymentStatus}.`;
-        httpStatus = 200;
+        httpStatus = 410;
       } else if (paymentStatus === "USER_DROPPED") {
         paymentSchema.status = "user_dropped";
         responseBody.message = `Payment ${paymentStatus}.`;
-        httpStatus = 200;
+        httpStatus = 400;
+      } else if (paymentStatus === "PENDING") {
+        paymentSchema.status = "processing";
+        responseBody.message = `Payment ${paymentStatus}.`;
+        httpStatus = 202;
       }
 
       await paymentSchema.save();

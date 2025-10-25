@@ -8,6 +8,7 @@ import productRouter from "./routes/product.route.js";
 import cartRouter from "./routes/cart.route.js";
 import paymentRoute from "./routes/payment.route.js";
 import userRouter from "./routes/user.route.js";
+import adminRouter from "./routes/admin.route.js";
 
 const app = express();
 
@@ -29,5 +30,6 @@ app.use("/api/products", productRouter);
 app.use("/api/payments", paymentRoute);
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/admin", adminRouter);
 
 export default app;

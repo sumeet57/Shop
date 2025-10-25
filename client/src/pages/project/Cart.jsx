@@ -8,7 +8,7 @@ const PurchasedProductCard = ({ item, backendUrl }) => {
     : "";
 
   return (
-    <div className="flex items-start space-x-6 bg-zinc-800 p-4 rounded-lg">
+    <div className="flex items-start space-x-6 bg-zinc-900 p-4 rounded-lg">
       <img
         src={`${correctedImageUrl}`}
         alt={item.name}
@@ -62,7 +62,7 @@ const Cart = () => {
   }, [backendUrl]);
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-200">
+    <div className="min-h-screen  text-zinc-200">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl font-extrabold mb-8">My Purchased Products</h1>
         {isLoading ? (

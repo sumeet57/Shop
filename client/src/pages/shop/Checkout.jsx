@@ -213,12 +213,14 @@ const Checkout = () => {
         });
       } else if (res.status === 400) {
         toast.error("Payment failed or incomplete.");
-      } else if (res.status === 404) {
-        toast.error("Order not found for verification.");
+      } else if (res.status === 410) {
+        toast.error("Payment session has expired.");
       } else if (res.status === 500) {
         toast.error("Server error during payment verification.");
       } else if (res.status === 409) {
         toast.info("Product is already in the cart.");
+      } else if (res.status === 202) {
+        toast.info("Payment is still processing. Please wait.");
       } else {
         toast.error("Unexpected error during payment verification.");
       }

@@ -20,6 +20,7 @@ import Profile from "./pages/Profile.jsx";
 import Header from "./components/Shop/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import Cart from "./pages/project/Cart.jsx";
+import Project from "./pages/Project.jsx";
 function App() {
   return (
     <Router>
@@ -113,7 +114,7 @@ function App() {
           element={
             <UserContextProvider>
               <ScrollToTop />
-              <Cart />
+              <Project />
             </UserContextProvider>
           }
         />
