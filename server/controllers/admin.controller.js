@@ -1,4 +1,5 @@
 import Order from "../models/order.model.js";
+import User from "../models/user.model.js";
 
 export const getOrders = async (req, res) => {
   try {
@@ -45,5 +46,18 @@ export const updateOrderStatus = async (req, res) => {
     res.status(500).json({
       message: error.message || "Server error while updating order status.",
     });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("name email role phone");
+    if (!users) {
+      return res.status(404).json({ message: "No users found." });
+    }
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Server error while fetching users." });
   }
 };

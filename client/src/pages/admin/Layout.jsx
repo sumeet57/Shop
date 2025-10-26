@@ -8,6 +8,7 @@ import {
   LuUsers,
   LuClipboardList,
 } from "react-icons/lu";
+import Users from "./Users";
 
 const MainContent = ({ currentLink }) => {
   return (
@@ -15,14 +16,7 @@ const MainContent = ({ currentLink }) => {
       {currentLink === "dashboard" && <Dashboard />}
       {currentLink === "products" && <Products />}
       {currentLink === "orders" && <Order />}
-      {currentLink === "users" && (
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700/50 min-h-[70vh]">
-          <h1 className="text-3xl font-bold text-gray-100 mb-6 capitalize">
-            {currentLink} Page
-          </h1>
-          <div className="text-gray-400">Users Page</div>
-        </div>
-      )}
+      {currentLink === "users" && <Users />}
     </div>
   );
 };

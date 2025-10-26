@@ -9,7 +9,11 @@ import { Cashfree, CFEnvironment } from "cashfree-pg";
 import { isPaymentServiceEnabled } from "../services/services.js";
 const clientId = process.env.CASHFREE_CLIENT_ID;
 const clientSecret = process.env.CASHFREE_SECRET_ID;
-const cashfree = new Cashfree(CFEnvironment.SANDBOX, clientId, clientSecret);
+const enviornment =
+  process.env.CF_ENV === "PRODUCTION"
+    ? CFEnvironment.PRODUCTION
+    : CFEnvironment.SANDBOX;
+const cashfree = new Cashfree(enviornment, clientId, clientSecret);
 
 export const getCart = async (req, res) => {
   const userId = req.userId;

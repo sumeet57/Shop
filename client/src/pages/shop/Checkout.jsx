@@ -178,11 +178,11 @@ const Checkout = () => {
       const options = {
         paymentSessionId: sessionId,
         redirectTarget: "_modal",
-        mode: "SANDBOX",
+        mode: import.meta.env.VITE_CF_ENV,
       };
       await cashfree
         .checkout(options)
-        .then((data) => {
+        .then(() => {
           verifyPayment(orderId);
         })
         .catch((err) => {
