@@ -1,7 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiOutlineMail, HiOutlineKey, HiOutlineUser } from "react-icons/hi";
+import {
+  HiOutlineMail,
+  HiOutlineKey,
+  HiOutlineUser,
+  HiOutlinePhone,
+  HiOutlineClock,
+  HiOutlineRefresh,
+} from "react-icons/hi";
 import { toast } from "react-toastify";
+import { authApi } from "../interceptors/auth.api";
 
 const InputField = ({
   icon,
@@ -12,7 +20,7 @@ const InputField = ({
   disabled = false,
 }) => (
   <div className="relative group">
-    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
       {icon}
     </span>
     <input
@@ -22,7 +30,7 @@ const InputField = ({
       onChange={onChange}
       disabled={disabled}
       required
-      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+      className="w-full pl-12 pr-4 py-3 bg-neutral-900 text-white border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500"
     />
   </div>
 );
@@ -34,51 +42,40 @@ const ActionButton = ({ onClick, disabled, children, type = "button" }) => (
     disabled={disabled}
     className="w-full flex justify-center items-center py-3 text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-semibold transition-all duration-300 disabled:from-blue-400 disabled:to-blue-500 shadow-md hover:shadow-lg"
   >
-    {disabled && (
-      <svg
-        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        ></circle>
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
-    )}
     {children}
   </button>
 );
 
 const Auth = () => {
-  const backendUrl =
-    // import.meta.env.VITE_BACKEND_URL || "https://portfolio-t0hl.onrender.com";
-    import.meta.env.VITE_BACKEND_URL;
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [attemptsLeft, setAttemptsLeft] = useState(null);
+  const [timer, setTimer] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const resetForm = () => {
     setEmail("");
     setName("");
+    setPhone("");
     setCode("");
     setIsCodeSent(false);
     setIsLoading(false);
+    setAttemptsLeft(null);
+    setTimer(0);
   };
 
   const handleToggleForm = () => {
@@ -92,111 +89,147 @@ const Auth = () => {
       toast.error("Please enter your email address.");
       return;
     }
-    setIsLoading(true);
     try {
-      const res = await fetch(`${backendUrl}/api/auth/request-code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, type: isLogin ? "login" : "register" }),
+      setIsLoading(true);
+      const res = await authApi.post("/request-code", {
+        email,
+        type: isLogin ? "login" : "register",
       });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message || "Verification code sent!");
-        setIsCodeSent(true);
-      } else {
-        toast.error(data.message || "Failed to send code.");
-      }
+      toast.success(res.data.message);
+      setAttemptsLeft(res.data.attemptsLeft);
+      setIsCodeSent(true);
+      setTimer(60);
     } catch (error) {
-      toast.error("An error occurred. Please try again.");
+      toast.error(error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const endpoint = isLogin ? "login" : "register";
-    const payload = isLogin ? { email, code } : { email, name, code };
-
-    if (!isLogin && !name) {
-      toast.error("Please enter your name.");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const res = await fetch(`${backendUrl}/api/auth/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(`${isLogin ? "Login" : "Registration"} successful!`);
-        window.location.href = "/shop";
-      } else {
-        toast.error(
-          data.message || `${isLogin ? "Login" : "Registration"} failed.`
-        );
+    const endpoint = isLogin ? "/login" : "/register";
+    const payload = isLogin ? { email, code } : { email, name, code, phone };
+    if (!isLogin) {
+      if (!name) {
+        toast.error("Please enter your name.");
+        return;
       }
-    } catch (error) {
-      console.log("Error during form submission:", error);
-      toast.error("An error occurred. Please try again.");
+      if (!phone) {
+        toast.error("Please enter your phone number.");
+        return;
+      }
     }
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const res = await authApi.post(endpoint, payload);
+      toast.success(res.data.message);
+      navigate("/profile");
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  const renderRegistrationFields = (disabled) => (
+    <>
+      <InputField
+        icon={<HiOutlineUser className="h-5 w-5" />}
+        type="text"
+        placeholder="Full Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        disabled={disabled}
+      />
+      <InputField
+        icon={<HiOutlinePhone className="h-5 w-5" />}
+        type="tel"
+        placeholder="Phone Number"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        disabled={disabled}
+      />
+    </>
+  );
+
   const renderFormFields = () => {
+    const emailField = (
+      <InputField
+        icon={<HiOutlineMail className="h-5 w-5" />}
+        type="email"
+        placeholder="Email Address"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        disabled={isLoading}
+      />
+    );
+
     if (!isCodeSent) {
       return (
-        <InputField
-          icon={<HiOutlineMail className="h-5 w-5" />}
-          type="email"
-          placeholder="Email Address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
-        />
+        <>
+          {!isLogin && renderRegistrationFields(isLoading)}
+          {emailField}
+        </>
       );
     }
-    // After code is sent
+
+    const disabledEmailField = (
+      <InputField
+        icon={<HiOutlineMail className="h-5 w-5" />}
+        type="email"
+        placeholder="Email Address"
+        value={email}
+        onChange={() => {}}
+        disabled={true}
+      />
+    );
+
+    const codeField = (
+      <InputField
+        icon={<HiOutlineKey className="h-5 w-5" />}
+        type="text"
+        placeholder="Verification Code"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+      />
+    );
+
     return (
       <>
-        <InputField
-          icon={<HiOutlineMail className="h-5 w-5" />}
-          type="email"
-          placeholder="Email Address"
-          value={email}
-          onChange={() => {}} // No-op
-          disabled={true}
-        />
-        <InputField
-          icon={<HiOutlineKey className="h-5 w-5" />}
-          type="text"
-          placeholder="Verification Code"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-        />
-        {!isLogin && (
-          <InputField
-            icon={<HiOutlineUser className="h-5 w-5" />}
-            type="text"
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+        {disabledEmailField}
+        {codeField}
+        {!isLogin && renderRegistrationFields(false)}
+        {attemptsLeft !== null && (
+          <div className="flex items-center justify-between text-sm text-gray-300">
+            <div className="flex items-center gap-1">
+              <HiOutlineClock />
+              <span>Attempts Left: {attemptsLeft}</span>
+            </div>
+            <button
+              onClick={handleRequestCode}
+              disabled={timer > 0 || isLoading}
+              className={`flex items-center gap-1 text-blue-500 hover:text-blue-400 font-medium ${
+                timer > 0 ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <HiOutlineRefresh />
+              {timer > 0 ? `Resend in ${timer}s` : "Resend Code"}
+            </button>
+          </div>
         )}
       </>
     );
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-100 font-sans">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-2xl shadow-2xl">
+    <div className="authpage flex items-center justify-center min-h-screen bg-black font-sans">
+      <div className="w-full max-w-md p-8 space-y-8 bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-800">
         <div>
-          <h2 className="text-3xl font-bold text-center text-gray-800">
+          <h2 className="text-3xl font-bold text-center text-white">
             {isLogin ? "Welcome Back!" : "Create Account"}
           </h2>
-          <p className="mt-2 text-sm text-center text-gray-600">
+          <p className="mt-2 text-sm text-center text-gray-400">
             {isLogin
               ? "Sign in to continue"
               : "Get started with a free account"}
@@ -219,11 +252,11 @@ const Auth = () => {
           </ActionButton>
         </form>
 
-        <p className="text-sm text-center text-gray-600">
+        <p className="text-sm text-center text-gray-400">
           {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button
             onClick={handleToggleForm}
-            className="ml-2 font-semibold text-blue-600 hover:text-blue-500 focus:outline-none"
+            className="ml-2 font-semibold text-blue-500 hover:text-blue-400 focus:outline-none"
           >
             {isLogin ? "Register" : "Login"}
           </button>

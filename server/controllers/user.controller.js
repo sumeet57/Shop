@@ -41,18 +41,24 @@ export const requestCode = async (req, res) => {
   const { email, type } = req.body;
 
   if (!email || !type) {
-    return res
-      .status(400)
-      .json({ message: "Email and action type are required." });
+    return res.status(400).json({ error: "Email are required." });
   }
 
   try {
+    const user = await User.findOne({ email });
     if (type === "login") {
-      const user = await User.findOne({ email });
       if (!user) {
         return res
           .status(404)
-          .json({ message: "Account not found. Please register first." });
+          .json({ error: "Account not found. Please register first." });
+      }
+    }
+
+    if (type === "register") {
+      if (user) {
+        return res
+          .status(409)
+          .json({ error: "This email already exists, please login." });
       }
     }
 
@@ -66,7 +72,7 @@ export const requestCode = async (req, res) => {
         ) {
           return res
             .status(429)
-            .json({ message: "Too many attempts. Please try again later." });
+            .json({ error: "Too many attempts. Please try again later." });
         }
         verification.attempts = 1;
         verification.blockExpiresAt = undefined;
@@ -90,46 +96,45 @@ export const requestCode = async (req, res) => {
 
     res.status(200).json({
       message: "Verification code sent to your email.",
-      testOnlyCode: code,
+      attemptsLeft: 5 - verification.attempts,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error while requesting code." });
+    res.status(500).json({ error: "Server error while requesting code." });
   }
 };
 export const register = async (req, res) => {
-  const { email, name, code } = req.body;
+  const { email, name, phone, code } = req.body;
   try {
     const verification = await Verification.findOne({ email });
     if (!verification || verification.expiresAt < new Date()) {
-      return res
-        .status(400)
-        .json({ message: "Code is invalid or has expired." });
+      return res.status(400).json({ error: "Code is invalid or has expired." });
     }
     const isMatch = await bcrypt.compare(code, verification.hashedCode);
     if (!isMatch) {
-      return res.status(400).json({ message: "Incorrect verification code." });
+      return res.status(400).json({ error: "Incorrect verification code." });
     }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
         .status(409)
-        .json({ message: "An account with this email already exists." });
+        .json({ error: "This email already exists, please login." });
     }
     const newUser = await User.create({
       name,
       email,
+      phone,
     });
     await Verification.deleteOne({ email });
 
     generateTokensAndSetCookies(newUser._id, res);
 
     res.status(200).json({
-      user: { id: newUser._id, name: newUser.name, email: newUser.email },
+      message: "Registration successful.",
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error during registration." });
+    res.status(500).json({ error: "Server error during registration." });
   }
 };
 
@@ -138,30 +143,26 @@ export const login = async (req, res) => {
   try {
     const verification = await Verification.findOne({ email });
     if (!verification || verification.expiresAt < new Date()) {
-      return res
-        .status(400)
-        .json({ message: "Code is invalid or has expired." });
+      return res.status(400).json({ error: "Code is invalid or has expired." });
     }
     const isMatch = await bcrypt.compare(code, verification.hashedCode);
     if (!isMatch) {
-      return res.status(400).json({ message: "Incorrect verification code." });
+      return res.status(400).json({ error: "Incorrect verification code." });
     }
     const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(404)
-        .json({ message: "Account not found. Please register first." });
+        .json({ error: "Account not found. Please register first." });
     }
     await Verification.deleteOne({ email });
 
     generateTokensAndSetCookies(user._id, res);
 
-    res
-      .status(200)
-      .json({ user: { id: user._id, name: user.name, email: user.email } });
+    res.status(200).json({ message: "Login successful." });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error during login." });
+    res.status(500).json({ error: "Server error during login." });
   }
 };
 
@@ -199,7 +200,7 @@ export const updateUser = async (req, res) => {
   }
 };
 export const logout = (req, res) => {
-  res.clearCookie("accessToken", { ...cookieOptionsAccess });
-  res.clearCookie("refreshToken", { ...cookieOptionsRefresh });
+  res.clearCookie("accessToken", cookieOptionsAccess);
+  res.clearCookie("refreshToken", cookieOptionsRefresh);
   return res.status(200).json({ message: "Logged out successfully." });
 };

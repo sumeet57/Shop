@@ -20,7 +20,7 @@ export const UserContextProvider = ({ children }) => {
           const data = await res.json();
           setUser(data.user);
         } else if (res.status === 401) {
-          if (window.location.pathname !== "/shop") {
+          if (window.location.pathname !== "/") {
             window.location.href = "/auth";
           }
         } else {

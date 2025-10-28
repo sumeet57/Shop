@@ -73,7 +73,8 @@
   background-blend-mode: normal, normal, normal, normal;
 }
 .profile,
-.project {
+.project,
+.authpage {
   background-color: hsla(0, 0%, 0%, 1);
   background-image: radial-gradient(
       circle at 5% 5%,
