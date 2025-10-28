@@ -13,17 +13,24 @@ const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Access-Control-Allow-Origin",
+      "Access-Control-Allow-Headers",
+      "Access-Control-Allow-Credentials",
+    ],
   },
 });
 
-let totalUsers = 0;
-
 io.on("connection", (socket) => {
-  totalUsers = totalUsers + 1;
-  io.emit("totalUsers", totalUsers); // Send totalUsers to all clients on connect
+  console.log("New client connected:", socket.id);
   socket.on("disconnect", () => {
-    totalUsers = totalUsers - 1;
-    io.emit("totalUsers", totalUsers); // Send updated totalUsers to all clients on disconnect
+    console.log("Client disconnected:", socket.id);
   });
 });
 

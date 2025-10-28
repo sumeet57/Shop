@@ -1,18 +1,18 @@
 import { Router } from "express";
 import {
-  paymentResponse,
+  checkout,
+  verifyPayment,
   paymentServiceStatus,
   paymentServiceToggle,
 } from "../controllers/payment.controller.js";
-import { checkout } from "../controllers/cart.controller.js";
+
 import { Authenticate } from "../middlewares/Authentication.js";
 import { authorize } from "../middlewares/Authorization.js";
 
 const paymentRoute = Router();
 
 paymentRoute.post("/checkout", Authenticate, checkout);
-paymentRoute.post("/verify", Authenticate, paymentResponse);
-// paymentRoute.post("/failed", Authenticate, paymentFailed);
+paymentRoute.post("/verify", Authenticate, verifyPayment);
 paymentRoute.post(
   "/payment-service",
   Authenticate,
@@ -25,6 +25,5 @@ paymentRoute.get(
   authorize(["admin"]),
   paymentServiceStatus
 );
-// paymentRoute.post("/webhook", paymentResponse);
 
 export default paymentRoute;
