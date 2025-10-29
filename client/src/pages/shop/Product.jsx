@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation, Outlet } from "react-router-dom";
 import { LuArchive } from "react-icons/lu";
 import { FcApproval } from "react-icons/fc";
+import { productApi } from "../../interceptors/product.api";
 
 const Product = () => {
   const { productId } = useParams();
@@ -17,18 +18,13 @@ const Product = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${backendUrl}/api/products/${productId}`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) {
-          throw new Error("Could not find the requested product.");
+        const res = await productApi.get(`/${productId}`);
+        if (res) {
+          const { data } = res;
+          setProduct(data);
         }
-        const data = await res.json();
-        // console.log(data);
-        setProduct(data);
-      } catch (err) {
-        setError(err.message);
+      } catch (error) {
+        setError(error);
       } finally {
         setIsLoading(false);
       }
@@ -155,13 +151,15 @@ const Product = () => {
                   <p className="text-sm font-medium mb-4">
                     {product.stock > 0 ? (
                       <span className="text-green-400 font-bold">
-                        {product.category != "web"
-                          ? `In Stock (${product.stock} available)`
-                          : "Available for purchase"}
+                        In Stock ✓
+                      </span>
+                    ) : product.category === "iot" ? (
+                      <span className="text-red-400 font-bold">
+                        Out of Stock ✗
                       </span>
                     ) : (
-                      <span className="text-red-400 font-bold">
-                        Out of Stock
+                      <span className="text-green-400 font-bold">
+                        Currently available ✓
                       </span>
                     )}
                   </p>

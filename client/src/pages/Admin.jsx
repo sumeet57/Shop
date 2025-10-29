@@ -10,7 +10,6 @@ const Admin = () => {
 
   return (
     <>
-      <Header />
       {location.pathname === "/admin" || location.pathname === "/admin/" ? (
         <Layout />
       ) : (

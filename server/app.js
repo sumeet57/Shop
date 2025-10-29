@@ -17,8 +17,8 @@ import userRouter from "./routes/user.route.js";
 import adminRouter from "./routes/admin.route.js";
 
 const limiter = rateLimiter({
-  windowMs: 10 * 60 * 1000,
-  max: 50,
+  windowMs: 5 * 60 * 1000,
+  max: 100,
   message: "Too many requests from this IP, please try again later.",
 });
 
@@ -41,8 +41,8 @@ app.use(
   })
 );
 
-app.use(bodyParser.json({ limit: "5mb" }));
-app.use(bodyParser.urlencoded({ extended: true, limit: "10kb" }));
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 // app.use(mongoSanitize());
 app.use(helmet());

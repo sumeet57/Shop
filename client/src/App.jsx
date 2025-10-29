@@ -38,10 +38,14 @@ function App() {
         <Route
           path="/"
           element={
-            <UserContextProvider>
-              <ScrollToTop />
-              <Shop />
-            </UserContextProvider>
+            <>
+              <UserContextProvider>
+                <ScrollToTop />
+                <Header />
+                <Shop />
+                <Footer />
+              </UserContextProvider>
+            </>
           }
           children={
             <>
@@ -49,8 +53,10 @@ function App() {
                 path=":productId"
                 element={
                   <>
-                    <ScrollToTop />
-                    <Product />
+                    <UserContextProvider>
+                      <ScrollToTop />
+                      <Product />
+                    </UserContextProvider>
                   </>
                 }
                 children={
@@ -60,7 +66,9 @@ function App() {
                       element={
                         <UserContextProvider>
                           <ScrollToTop />
+                          {/* <Header /> */}
                           <Checkout />
+                          {/* <Footer /> */}
                         </UserContextProvider>
                       }
                     />
@@ -69,7 +77,9 @@ function App() {
                       element={
                         <UserContextProvider>
                           <ScrollToTop />
+                          {/* <Header /> */}
                           <PaymentSuccess />
+                          {/* <Footer /> */}
                         </UserContextProvider>
                       }
                     />
@@ -84,7 +94,10 @@ function App() {
           path="admin"
           element={
             <UserContextProvider>
+              <ScrollToTop />
+              <Header />
               <Admin />
+              <Footer />
             </UserContextProvider>
           }
           children={
@@ -93,6 +106,8 @@ function App() {
                 path="add-product"
                 element={
                   <UserContextProvider>
+                    <ScrollToTop />
+
                     <Create />
                   </UserContextProvider>
                 }
@@ -101,6 +116,8 @@ function App() {
                 path="update-product/:id"
                 element={
                   <UserContextProvider>
+                    <ScrollToTop />
+
                     <Update />
                   </UserContextProvider>
                 }
@@ -114,7 +131,9 @@ function App() {
           element={
             <UserContextProvider>
               <ScrollToTop />
+              <Header />
               <Project />
+              <Footer />
             </UserContextProvider>
           }
         />
@@ -123,7 +142,9 @@ function App() {
           path="/logout"
           element={
             <UserContextProvider>
+              <Header />
               <Logout />
+              <Footer />
             </UserContextProvider>
           }
         />
@@ -135,7 +156,18 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy-policy" element={<PrivacyStatement />} />
 
-        <Route path="/auth" element={<Auth />} />
+        <Route
+          path="/auth"
+          element={
+            <>
+              <UserContextProvider>
+                <Header />
+                <Auth />
+                <Footer />
+              </UserContextProvider>
+            </>
+          }
+        />
 
         {/* Catch-all route for any undefined paths (404 page) - This should be last */}
         <Route path="*" element={<NotFoundPage />} />

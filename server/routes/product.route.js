@@ -9,30 +9,38 @@ import {
   updateProduct,
 } from "../controllers/product.controller.js";
 import { imagekitUploadMiddleware } from "../middlewares/ImageUpload.js";
+import {
+  validateCreateProduct,
+  validateObjectId,
+  validateUpdateProduct,
+} from "../middlewares/validation.js";
 
 const productRouter = Router();
-
+const adminOnly = [Authenticate, authorize(["admin"])];
 productRouter.post(
   "/create",
-  Authenticate,
-  authorize(["admin"]),
-  imagekitUploadMiddleware,
+  ...adminOnly,
+  imagekitUploadMiddleware, // ✅ parse body first
+  validateCreateProduct, // ✅ validate after
   createProduct
 );
+
 productRouter.put(
   "/update/:id",
-  Authenticate,
-  authorize(["admin"]),
-  imagekitUploadMiddleware,
+  validateObjectId,
+  ...adminOnly,
+  imagekitUploadMiddleware, // ✅ parse first
+  validateUpdateProduct, // ✅ validate after
   updateProduct
 );
+
 productRouter.delete(
   "/delete/:id",
-  Authenticate,
-  authorize(["admin"]),
+  validateObjectId,
+  ...adminOnly,
   deleteProduct
 );
-productRouter.get("/:id", getProduct);
+productRouter.get("/:id", validateObjectId, getProduct);
 productRouter.get("/", getProducts);
 
 export default productRouter;

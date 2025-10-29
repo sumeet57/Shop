@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { LuUpload, LuX, LuPlus, LuTrash2 } from "react-icons/lu";
+import { productApi } from "../../interceptors/product.api";
 
 const Update = () => {
   const navigate = useNavigate();
@@ -30,24 +31,22 @@ const Update = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${backendUrl}/api/products/${id}`, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("Product not found");
-
-        const data = await res.json();
-        setFormData({
-          ...data,
-          features: data.features || [],
-          includes: data.includes || [],
-          projectLink: data.link || data.projectLink || "",
-        });
-        if (data.imageUrl) {
-          setImagePreview(data.imageUrl);
+        const res = await productApi.get(`/${id}`);
+        if (res) {
+          const { data } = res;
+          setFormData({
+            ...data,
+            features: data.features || [],
+            includes: data.includes || [],
+            projectLink: data.link || data.projectLink || "",
+          });
+          if (data.imageUrl) {
+            setImagePreview(data.imageUrl);
+          }
         }
       } catch (err) {
-        setError(err.message);
-        toast.error(err.message);
+        setError(error);
+        toast.error(error);
       } finally {
         setIsLoading(false);
       }
@@ -123,13 +122,13 @@ const Update = () => {
     if (category === "iot") {
       dataToSubmit.append("stock", formData.stock);
     } else if (category === "web") {
-      dataToSubmit.append("stock", 999999);
+      // dataToSubmit.append("stock", 999999);
     } else if (category === "custom") {
       dataToSubmit.append("stock", 0);
     }
 
     if (category === "iot" || category === "web") {
-      dataToSubmit.append("projectLink", formData.projectLink);
+      dataToSubmit.append("link", formData.projectLink);
     }
 
     if (category !== "custom") {
@@ -145,21 +144,13 @@ const Update = () => {
     }
 
     try {
-      const response = await fetch(`${backendUrl}/api/products/update/${id}`, {
-        method: "PUT",
-        body: dataToSubmit,
-        credentials: "include",
-      });
-      const data = await response.json();
-      if (response.ok) {
-        toast.success("Product updated successfully!");
+      const res = await productApi.put(`/update/${id}`, dataToSubmit);
+      if (res) {
+        toast.success(res.data.message);
         navigate(-1);
-      } else {
-        toast.error(data.message || "Failed to update product.");
       }
     } catch (error) {
-      console.error("Error updating product:", error);
-      toast.error("An error occurred while updating the product.");
+      toast.error(error);
     } finally {
       setIsSubmitting(false);
     }

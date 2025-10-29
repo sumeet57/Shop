@@ -13,11 +13,9 @@ const Project = () => {
 
   return (
     <>
-      <Header />
       <div className="project">
         {location.pathname === "/project" ? <Cart /> : <Outlet />}
       </div>
-      <Footer />
     </>
   );
 };

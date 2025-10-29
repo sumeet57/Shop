@@ -57,7 +57,11 @@ const ProductCard = ({ product }) => {
             }`}
             disabled={product?.stock <= 0}
           >
-            {product?.stock > 0 ? "Buy Now" : "Out of Stock"}
+            {product?.category === "iot"
+              ? product?.stock > 0
+                ? "Order Now"
+                : "Out of Stock"
+              : "Buy Now"}
           </button>
         </div>
       </div>

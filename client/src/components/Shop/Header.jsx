@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { href, Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { UserContext } from "../../Context/User.context";
 import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,16 +55,6 @@ const Header = () => {
     { href: "/logout", label: "Logout" },
   ];
 
-  const [totalUsers, setTotalUsers] = useState(0);
-  useEffect(() => {
-    socket.on("totalUsers", (totalUsers) => {
-      setTotalUsers(totalUsers);
-    });
-    return () => {
-      socket.off("totalUsers");
-    };
-  }, []);
-
   return (
     <>
       <button
@@ -81,16 +71,12 @@ const Header = () => {
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             {isMenuOpen ? (
-              <FiX size={24} className="text-zinc-800" />
+              <FiX size={24} className="text-red-500" />
             ) : (
-              <FiMenu size={24} className="text-zinc-800" />
+              <FiMenu size={24} className="text-zinc-100" />
             )}
           </motion.div>
         </AnimatePresence>
-      </button>
-
-      <button className="fixed top-4 left-4 z-50 flex h-6 w-24 items-center justify-center rounded-full border  bg-zinc-950 text-white shadow-lg backdrop-blur-md transition-transform hover:scale-105 active:scale-95">
-        <PiUsers className="mr-2" size={20} /> - {totalUsers}
       </button>
 
       <AnimatePresence>

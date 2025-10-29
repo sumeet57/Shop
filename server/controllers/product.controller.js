@@ -1,7 +1,7 @@
+import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 import { imagekit } from "../services/image.service.js";
 export const createProduct = async (req, res) => {
-  console.log("Request Body:", req.body.name);
   const {
     name,
     projectContext,
@@ -12,12 +12,13 @@ export const createProduct = async (req, res) => {
     features,
     includes,
     imageUrl,
-    projectLink,
+    link,
   } = req.body;
 
   if (!imageUrl) {
-    return res.status(400).json({ message: "Image upload failed." });
+    return res.status(400).json({ error: "Image upload failed." });
   }
+
   try {
     const newProduct = new Product({
       user: req.userId,
@@ -31,13 +32,15 @@ export const createProduct = async (req, res) => {
       category,
       features,
       includes,
-      link: projectLink,
+      link,
     });
     await newProduct.save();
-    res.status(201).json(newProduct);
+    res.status(201).json({
+      message: "Product created successfully.",
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error while creating product." });
+    res.status(500).json({ error: "Server error while creating product." });
   }
 };
 
@@ -84,7 +87,7 @@ export const updateProduct = async (req, res) => {
   } catch (error) {
     console.error("Product update failed:", error);
     res.status(500).json({
-      message: error.message || "Server error while updating product.",
+      error: error.message || "Server error while updating product.",
     });
   }
 };
@@ -92,6 +95,9 @@ export const updateProduct = async (req, res) => {
 export const deleteProduct = async (req, res) => {
   const { id } = req.params;
   try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid product ID." });
+    }
     const product = await Product.findByIdAndDelete(id);
     if (!product) {
       return res.status(404).json({ message: "Product not found." });
@@ -109,12 +115,12 @@ export const getProduct = async (req, res) => {
     const product = await Product.findById(id);
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found." });
+      return res.status(404).json({ error: "Product not found." });
     }
     res.status(200).json(product);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error while fetching product." });
+    res.status(500).json({ error: "Server error while fetching product." });
   }
 };
 
@@ -124,6 +130,6 @@ export const getProducts = async (req, res) => {
     res.status(200).json(products);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error while fetching products." });
+    res.status(500).json({ error: "Server error while fetching products." });
   }
 };

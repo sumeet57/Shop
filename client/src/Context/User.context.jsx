@@ -9,6 +9,7 @@ export const UserContextProvider = ({ children }) => {
 
   useEffect(() => {
     setLoading(true);
+
     const fetchUser = async () => {
       try {
         const res = await fetch(`${backendUrl}/api/auth/me`, {
@@ -20,7 +21,10 @@ export const UserContextProvider = ({ children }) => {
           const data = await res.json();
           setUser(data.user);
         } else if (res.status === 401) {
-          if (window.location.pathname !== "/") {
+          const path = window.location.pathname;
+          const isPublic = path === "/" || /^\/[^/]+$/.test(path); // matches "/", "/abc", but not "/abc/def"
+
+          if (!isPublic) {
             window.location.href = "/auth";
           }
         } else {
@@ -28,9 +32,14 @@ export const UserContextProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUser().finally(() => setLoading(false));
+
+    if (window.location.pathname !== "/auth") {
+      fetchUser();
+    }
   }, []);
 
   return (

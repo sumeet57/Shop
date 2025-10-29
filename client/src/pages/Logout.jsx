@@ -15,7 +15,7 @@ const Logout = () => {
 
       if (response.status === 200) {
         toast.success("Logged out successfully.");
-        navigate("/");
+        window.location.href = "/";
       } else {
         toast.error("Logout failed. Please try again.");
       }

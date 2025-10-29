@@ -84,7 +84,6 @@ const Shop = () => {
   return (
     <>
       <div className="shop-background">
-        <Header />
         {location.pathname === "/" ? (
           <section
             id="projects"
@@ -146,9 +145,7 @@ const Shop = () => {
         ) : (
           <Outlet />
         )}
-        <Footer />
       </div>
-      {/* <Footer /> */}
     </>
   );
 };

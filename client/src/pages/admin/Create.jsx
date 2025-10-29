@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LuUpload, LuX, LuPlus, LuTrash2 } from "react-icons/lu";
 import { toast } from "react-toastify";
+import { productApi } from "../../interceptors/product.api";
 
 const Create = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -96,42 +97,39 @@ const Create = () => {
     if (category === "iot") {
       dataToSubmit.append("stock", formData.stock);
     } else if (category === "web") {
-      dataToSubmit.append("stock", 999999);
+      // dataToSubmit.append("stock", 999999);
     } else if (category === "custom") {
       dataToSubmit.append("stock", 0);
     }
     if (category === "iot" || category === "web") {
-      dataToSubmit.append("projectLink", formData.projectLink);
+      dataToSubmit.append("link", formData.projectLink);
     }
 
     dataToSubmit.append("category", formData.category);
     dataToSubmit.append("file", imageFile);
 
     if (category !== "custom") {
-      dataToSubmit.append("features", JSON.stringify(formData.features));
-      dataToSubmit.append("includes", JSON.stringify(formData.includes));
+      if (Array.isArray(formData.features)) {
+        formData.features.forEach((feature) => {
+          dataToSubmit.append("features", feature);
+        });
+      }
+
+      if (Array.isArray(formData.includes)) {
+        formData.includes.forEach((include) => {
+          dataToSubmit.append("includes", include);
+        });
+      }
     }
 
     try {
-      console.log("Submitting form data...");
-      const response = await fetch(`${backendUrl}/api/products/create`, {
-        method: "POST",
-        body: dataToSubmit, // <--- CORRECTED: Sending the FormData object
-        credentials: "include",
-      });
-
-      const data = await response.json();
-
-      console.log("Server response:", data);
-      if (response.ok) {
-        toast.success("Product created successfully!");
+      const res = await productApi.post("/create", dataToSubmit);
+      if (res) {
+        toast.success(res.data.message);
         navigate(-1);
-      } else {
-        toast.error(data.message || "Failed to create product.");
       }
     } catch (error) {
-      console.error("Error creating product:", error);
-      toast.error("An error occurred while creating the product.");
+      toast.error(error);
     } finally {
       setIsSubmitting(false);
     }

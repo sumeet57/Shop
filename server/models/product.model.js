@@ -8,12 +8,12 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, required: true, min: 0 },
   imageUrl: { type: String, required: true, trim: true },
   imageFileId: { type: String, required: true, trim: true },
-  stock: { type: Number, required: true, min: 0 },
+  stock: { type: Number, min: 0 },
   category: { type: String, required: true, trim: true, index: true },
   features: { type: Array, trim: true },
   includes: { type: Array, trim: true },
   link: {
-    type: [String],
+    type: String,
     required: true,
   },
 });

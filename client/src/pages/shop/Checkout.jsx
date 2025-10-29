@@ -164,7 +164,8 @@ const Checkout = () => {
           "Payment service is currently unavailable. Please try again later."
         );
       } else {
-        console.log(data, res);
+        console.log(data);
+
         toast.error("Mock Checkout Failed. Please try again.");
       }
     } catch (err) {

@@ -7,7 +7,7 @@ const multerUpload = multer({
 
 export const imagekitUploadMiddleware = (req, res, next) => {
   multerUpload(req, res, async (err) => {
-    if (err) return res.status(400).json({ message: err.message });
+    if (err) return res.status(400).json({ error: err.message });
     if (!req.file) {
       return next();
     }
@@ -24,7 +24,7 @@ export const imagekitUploadMiddleware = (req, res, next) => {
       next();
     } catch (uploadError) {
       console.error(uploadError);
-      return res.status(500).json({ message: "Failed to upload image." });
+      return res.status(500).json({ error: "Failed to upload image." });
     }
   });
 };
