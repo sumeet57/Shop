@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiOutlineMail,
@@ -10,6 +10,7 @@ import {
 } from "react-icons/hi";
 import { toast } from "react-toastify";
 import { authApi } from "../interceptors/auth.api";
+import { UserContext } from "../Context/User.context";
 
 const InputField = ({
   icon,
@@ -47,6 +48,7 @@ const ActionButton = ({ onClick, disabled, children, type = "button" }) => (
 );
 
 const Auth = () => {
+  const { user, setUser } = useContext(UserContext);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -124,7 +126,7 @@ const Auth = () => {
       setIsLoading(true);
       const res = await authApi.post(endpoint, payload);
       toast.success(res.data.message);
-      navigate("/profile");
+      window.location.href = "/";
     } catch (error) {
       toast.error(error);
     } finally {

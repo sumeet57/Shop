@@ -1,4 +1,5 @@
 import React, { useContext, createContext, useEffect } from "react";
+import authApi from "../interceptors/auth.api";
 
 export const UserContext = createContext();
 
@@ -12,26 +13,15 @@ export const UserContextProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
-        const res = await fetch(`${backendUrl}/api/auth/me`, {
-          method: "GET",
-          credentials: "include",
-        });
+        const res = await authApi.get("/me");
 
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else if (res.status === 401) {
-          const path = window.location.pathname;
-          const isPublic = path === "/" || /^\/[^/]+$/.test(path); // matches "/", "/abc", but not "/abc/def"
-
-          if (!isPublic) {
-            window.location.href = "/auth";
-          }
-        } else {
-          console.error("Failed to fetch user data");
+        // console.log("UserContext fetch user response:", res);
+        if (res) {
+          const { data } = res;
+          setUser(data);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching user data");
       } finally {
         setLoading(false);
       }

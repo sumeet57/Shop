@@ -16,8 +16,12 @@ authApi.interceptors.response.use(
   (error) => {
     if (error.response) {
       if (error.response.status === 401) {
-        // Handle unauthorized access, e.g., redirect to login
-        window.location.href = "/auth";
+        const path = window.location.pathname;
+        const isPublic = path === "/" || /^\/[^/]+$/.test(path); // matches "/", "/abc", but not "/abc/def"
+
+        if (!isPublic) {
+          window.location.href = "/auth";
+        }
       } else {
         return Promise.reject(error.response.data.error);
       }
@@ -25,3 +29,5 @@ authApi.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export default authApi;

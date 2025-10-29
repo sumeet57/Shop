@@ -7,6 +7,8 @@ import {
   FaEdit,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import authApi from "../interceptors/auth.api";
+import { toast } from "react-toastify";
 
 // --- START: Input Group Component ---
 const InputGroup = ({
@@ -152,13 +154,11 @@ const Profile = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`${backendUrl}/api/user/profile`, {
-        credentials: "include",
-        method: "GET",
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to fetch user");
-      setUser(data.user);
+      const res = authApi.get("/me");
+      if (res) {
+        const { data } = await res;
+        setUser(data);
+      }
     } catch (error) {
       console.error("User fetch error:", error);
     }
@@ -166,23 +166,13 @@ const Profile = () => {
 
   const handleSaveProfile = async (profileData) => {
     try {
-      const response = await fetch(`${backendUrl}/api/user/profile`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileData),
-        credentials: "include",
-      });
-
-      const updatedUser = await response.json();
-      if (!response.ok)
-        throw new Error(updatedUser.message || "Failed to update profile");
-
-      // Refresh data after saving
-      await fetchUserData();
-      handleCloseProfileModal();
+      const res = await authApi.put("/me", profileData);
+      if (res) {
+        await fetchUserData();
+        handleCloseProfileModal();
+      }
     } catch (error) {
-      console.error("Save profile error:", error);
-      alert(`Error: ${error.message}`);
+      toast.error(error);
     }
   };
 

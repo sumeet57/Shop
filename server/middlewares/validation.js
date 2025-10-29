@@ -1,6 +1,7 @@
 import {
   loginSchema,
   registerSchema,
+  updateProfileSchema,
   verifyCodeSchema,
 } from "../validations/auth.validate.js";
 import {
@@ -27,6 +28,16 @@ export const validateLogin = (req, res, next) => {
 
 export const validateVerificationCode = (req, res, next) => {
   const { error } = verifyCodeSchema.validate(req.body, {
+    abortEarly: false,
+  });
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+  next();
+};
+
+export const validateUpdateProfile = (req, res, next) => {
+  const { error } = updateProfileSchema.validate(req.body, {
     abortEarly: false,
   });
   if (error) {

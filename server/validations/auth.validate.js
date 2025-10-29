@@ -34,3 +34,16 @@ export const verifyCodeSchema = Joi.object({
   }),
   type: Joi.string().valid("register", "login").required(),
 });
+
+export const updateProfileSchema = Joi.object({
+  name: Joi.string().min(3).max(30).optional().messages({
+    "string.min": "Name must be at least 3 characters long",
+    "string.max": "Name must be at most 30 characters long",
+  }),
+  phone: Joi.string()
+    .pattern(/^[0-9]{10}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "Phone number must be 10 digits",
+    }),
+});

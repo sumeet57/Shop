@@ -21,6 +21,8 @@ import Header from "./components/Shop/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import Cart from "./pages/project/Cart.jsx";
 import Project from "./pages/Project.jsx";
+import UnauthorizedPage from "./pages/UnauthorizedPage.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 function App() {
   return (
     <Router>
@@ -94,6 +96,7 @@ function App() {
           path="admin"
           element={
             <UserContextProvider>
+              <ProtectedRoute allowedRoles={["admin"]} />
               <ScrollToTop />
               <Header />
               <Admin />
@@ -166,6 +169,17 @@ function App() {
                 <Footer />
               </UserContextProvider>
             </>
+          }
+        />
+
+        <Route
+          path="/unauthorized"
+          element={
+            // <UserContextProvider>
+            // <Header />
+            <UnauthorizedPage />
+            // <Footer />
+            // </UserContextProvider>
           }
         />
 
