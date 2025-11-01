@@ -68,12 +68,12 @@ export const sendVerificationEmail = async (recipientEmail, code) => {
   // Replace placeholders in the HTML template
   const personalizedHtml = htmlTemplate
     .replace("{{CODE}}", code)
-    .replace(/{{PRODUCT_NAME}}/g, "Confirmation"); // Use regex 'g' flag to replace all occurrences
+    .replace(/{{PRODUCT_NAME}}/g, "Confirmation");
 
   const payload = {
     sender: {
-      name: "sumeet.live",
-      email: "sum.pro57@gmail.com", // ⚠️ Replace with your verified sender email in Brevo
+      name: "shop.sumeet.live",
+      email: "sum.pro57@gmail.com",
     },
     to: [
       {

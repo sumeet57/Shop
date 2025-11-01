@@ -155,8 +155,7 @@ const Checkout = () => {
 
       const data = await res.json();
       if (res.status === 200) {
-        toast.success("Order ID generated successfully!");
-        console.log("data from checkout:", data);
+        toast.success("Checkout started. Redirecting to payment gateway...");
         setOrderId(data.orderId); // still store for future use
         await initializeCashfreePayment(data.paymentSessionId, data.orderId);
       } else if (res.status === 503) {
@@ -165,8 +164,7 @@ const Checkout = () => {
         );
       } else {
         console.log(data);
-
-        toast.error("Mock Checkout Failed. Please try again.");
+        toast.error("Failed to initiate checkout. Please try again.");
       }
     } catch (err) {
       toast.error("Network error during checkout.");
@@ -206,7 +204,6 @@ const Checkout = () => {
       });
 
       const data = await res.json();
-      console.log("Payment verification response:", data);
       if (res.status === 201) {
         toast.success("Payment verified and order completed!");
         navigate("../success", {

@@ -79,6 +79,7 @@
 
 .productCard {
   box-shadow: 10px 10px 1px black;
+  border-radius: 10px;
 }
 
 @media (max-width: 568px) {

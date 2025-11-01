@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation, Outlet } from "react-router-dom";
 import { LuArchive } from "react-icons/lu";
 import { FcApproval } from "react-icons/fc";
 import { productApi } from "../../interceptors/product.api";
+import LoadingScreen from "../../components/LoadingScreen";
 
 const Product = () => {
   const { productId } = useParams();
@@ -24,7 +25,7 @@ const Product = () => {
           setProduct(data);
         }
       } catch (error) {
-        setError(error);
+        setError(error.message || "Failed to fetch product.");
       } finally {
         setIsLoading(false);
       }
@@ -39,9 +40,7 @@ const Product = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-zinc-900">
-        <div className="text-center">
-          <p className="text-xl text-zinc-400">Loading Product...</p>
-        </div>
+        <LoadingScreen />
       </div>
     );
   }

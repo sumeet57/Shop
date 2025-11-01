@@ -8,6 +8,12 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   amount: { type: Number, required: true, min: 1 },
+  discountedAmount: { type: Number, default: 0, min: 0 },
+  paymentMethod: {
+    type: String,
+    enum: ["upi", "cash", "gift"],
+    required: true,
+  },
   selectedStation: { type: String, required: true },
   status: {
     type: String,

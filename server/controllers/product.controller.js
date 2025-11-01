@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 import { imagekit } from "../services/image.service.js";
+
 export const createProduct = async (req, res) => {
   const {
     name,
@@ -17,6 +18,11 @@ export const createProduct = async (req, res) => {
 
   if (!imageUrl) {
     return res.status(400).json({ error: "Image upload failed." });
+  }
+
+  const isValidCategory = ["web", "iot", "custom"].includes(category);
+  if (!isValidCategory) {
+    return res.status(400).json({ error: "Invalid product category." });
   }
 
   try {
@@ -47,7 +53,6 @@ export const createProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;
-
   try {
     if (updateData.features && typeof updateData.features === "string") {
       updateData.features = JSON.parse(updateData.features);

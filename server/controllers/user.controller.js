@@ -137,7 +137,6 @@ export const register = async (req, res) => {
     res.status(500).json({ error: "Server error during registration." });
   }
 };
-
 export const login = async (req, res) => {
   const { email, code } = req.body;
   try {
@@ -165,7 +164,6 @@ export const login = async (req, res) => {
     res.status(500).json({ error: "Server error during login." });
   }
 };
-
 export const getUser = async (req, res) => {
   const userId = req.userId;
   try {

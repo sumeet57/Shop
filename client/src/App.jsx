@@ -17,7 +17,7 @@ import Logout from "./pages/Logout.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import PaymentSuccess from "./pages/shop/PaymentSuccess.jsx";
 import Profile from "./pages/Profile.jsx";
-import Header from "./components/Shop/Header.jsx";
+import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import Cart from "./pages/project/Cart.jsx";
 import Project from "./pages/Project.jsx";
@@ -110,7 +110,6 @@ function App() {
                 element={
                   <UserContextProvider>
                     <ScrollToTop />
-
                     <Create />
                   </UserContextProvider>
                 }
@@ -120,7 +119,6 @@ function App() {
                 element={
                   <UserContextProvider>
                     <ScrollToTop />
-
                     <Update />
                   </UserContextProvider>
                 }

@@ -31,7 +31,6 @@ export const checkout = async (req, res) => {
   const { productId, userPhone, selectedStation } = req.body;
 
   try {
-    // fetch product and user details from database
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found." });
@@ -40,8 +39,17 @@ export const checkout = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+    // find if user already has the product in cart
+    const alreadyInCart = await Cart.findOne({
+      user: userId,
+      products: productId,
+    });
+    if (alreadyInCart) {
+      return res.status(409).json({
+        message: "Product already purchased and in your Project Section.",
+      });
+    }
     user.phone = userPhone || user.phone;
-    await user.save();
 
     // check product availability
     const productIsAvailable =
@@ -97,7 +105,7 @@ export const checkout = async (req, res) => {
       order_note: `Order for ${product.name}`,
     };
     const response = await cashfree.PGCreateOrder(order_data);
-
+    await user.save();
     if (response.data.payment_session_id) {
       res.status(200).json({
         paymentSessionId: response.data.payment_session_id,
@@ -212,17 +220,6 @@ export const verifyPayment = async (req, res) => {
       .json({ message: "Server error while processing payment response." });
   }
 };
-
-export const paymentServiceToggle = async (req, res) => {
-  try {
-    const { enabled } = req.body;
-    await togglePaymentService(enabled);
-    res.status(200).json({ message: "Payment service status updated." });
-  } catch (error) {
-    console.error("Error toggling payment service:", error);
-  }
-};
-
 export const paymentServiceStatus = async (req, res) => {
   try {
     const status = isPaymentServiceEnabled();
@@ -232,5 +229,14 @@ export const paymentServiceStatus = async (req, res) => {
     res
       .status(500)
       .json({ message: "Server error while fetching service status." });
+  }
+};
+export const paymentServiceToggle = async (req, res) => {
+  try {
+    const { enabled } = req.body;
+    await togglePaymentService(enabled);
+    res.status(200).json({ message: "Payment service status updated." });
+  } catch (error) {
+    console.error("Error toggling payment service:", error);
   }
 };

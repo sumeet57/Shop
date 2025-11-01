@@ -1,10 +1,8 @@
 import React, { useContext, useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { UserContext } from "../../Context/User.context";
+import { UserContext } from "../Context/User.context.jsx";
 import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import socket from "../Socket.js";
-import { PiUsers } from "react-icons/pi";
 const NavLinkItem = ({ to, label, index, closeMenu }) => (
   <motion.div
     variants={{
@@ -40,9 +38,9 @@ const Header = () => {
     { to: "/", label: "Shop" },
     ...(user?.name
       ? [
-          { to: "/project", label: "Projects" },
+          { to: "/project", label: "Your Purchases" },
           { to: "/profile", label: "Profile" },
-          { to: "/admin", label: "Admin" },
+          { to: "/logout", label: "Logout" },
         ]
       : [{ to: "/auth", label: "Sign In" }]),
   ];
@@ -52,14 +50,14 @@ const Header = () => {
     { href: "#", label: "Instagram" },
     { href: "www.linkedin.com/in/sumeet-umbalkar", label: "LinkedIn" },
     { href: "https://www.sumeet.live/", label: "Portfolio" },
-    { href: "/logout", label: "Logout" },
+    { href: "/admin", label: "Admin" },
   ];
 
   return (
     <>
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full border  bg-white/40 text-white shadow-lg backdrop-blur-md transition-transform hover:scale-105 active:scale-95"
+        className="fixed top-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-transform hover:scale-105 hover:bg-orange-400 hover:cursor-pointer active:scale-95"
         aria-label="Toggle menu"
       >
         <AnimatePresence mode="wait">
@@ -71,9 +69,9 @@ const Header = () => {
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             {isMenuOpen ? (
-              <FiX size={24} className="text-red-500" />
+              <FiX size={20} className="text-white-500" />
             ) : (
-              <FiMenu size={24} className="text-zinc-100" />
+              <FiMenu size={20} className="text-zinc-100" />
             )}
           </motion.div>
         </AnimatePresence>

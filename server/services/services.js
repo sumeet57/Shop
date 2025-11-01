@@ -1,7 +1,8 @@
 // global services.js file
 
-// payment service toggle
 let paymentServiceEnabled = false;
+
+// payment service toggle
 export const togglePaymentService = async (bool) => {
   paymentServiceEnabled = bool;
 };
